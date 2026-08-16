@@ -483,7 +483,7 @@ export default function BudgetApp() {
         {fabOpen && (
           <>
             <FabAction label="AI scan" icon={Sparkles} color={T.GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow T={T} />
-            <FabAction label="Add manually" icon={Plus} color={T.INK} onClick={openAddTx} T={T} />
+            <FabAction label="Add manually" icon={Plus} color="#161616" onClick={openAddTx} T={T} />
           </>
         )}
         <button onClick={() => setFabOpen((v) => !v)} aria-label="Add transaction" 
