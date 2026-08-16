@@ -1,0 +1,5 @@
+export { default } from "next-auth/middleware";
+
+export const config = {
+  matcher: ["/", "/api/categories/:path*", "/api/transactions/:path*", "/api/ai/:path*"],
+};
