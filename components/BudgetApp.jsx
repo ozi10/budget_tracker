@@ -204,7 +204,7 @@ export default function BudgetApp() {
   }
 
   return (
-    <div style={{ position: "relative", height: "100dvh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", background: PAPER, fontFamily: F_BODY, overflow: "hidden" }}>
+    <div style={{ display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", maxWidth: 430, margin: "0 auto", background: PAPER, fontFamily: F_BODY, overflow: "hidden" }}>
       <style>{`
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -215,14 +215,14 @@ export default function BudgetApp() {
 
       <Header totals={totals} onSettings={() => setShowSettings(true)} />
 
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 16px calc(100px + env(safe-area-inset-bottom))" }}>
+      <div style={{ overflowY: "auto", overflowX: "hidden", padding: "0 16px 20px" }}>
         {screen === "home" && <HomeScreen monthTotals={monthTotals} transactions={transactions} catById={catById} onSeeAll={(f) => { setTxFilter(f || "all"); setScreen("transactions"); }} onOpenTx={(t) => setEditingTx(t)} />}
         {screen === "transactions" && <TransactionsScreen transactions={transactions} catById={catById} filter={txFilter} setFilter={setTxFilter} onOpenTx={(t) => setEditingTx(t)} />}
         {screen === "reports" && <ReportsScreen transactions={transactions} catById={catById} month={reportMonth} setMonth={setReportMonth} />}
         {screen === "categories" && <CategoriesScreen categories={categories} transactions={transactions} onAdd={() => setEditingCat({ name: "", icon: "wallet", color: COLOR_PRESETS[0], type: "expense" })} onEdit={(c) => setEditingCat(c)} onDelete={removeCategory} />}
       </div>
 
-      <div style={{ position: "absolute", right: 16, bottom: "calc(82px + env(safe-area-inset-bottom))", zIndex: 40, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+      <div style={{ position: "fixed", right: 16, bottom: "calc(82px + env(safe-area-inset-bottom))", zIndex: 40, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10, maxWidth: 398 }}>
         {fabOpen && (
           <>
             <FabAction label="AI capture" icon={Sparkles} color={GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow />
@@ -231,7 +231,7 @@ export default function BudgetApp() {
         )}
         <button onClick={() => setFabOpen((v) => !v)} style={{ width: 56, height: 56, borderRadius: "50%", border: "none", background: INK, color: PAPER, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 18px rgba(28,37,54,0.4)", transform: fabOpen ? "rotate(45deg)" : "rotate(0)", transition: "transform .2s" }}><Plus size={26} /></button>
       </div>
-      {fabOpen && <div onClick={() => setFabOpen(false)} style={{ position: "absolute", inset: 0, zIndex: 35 }} />}
+      {fabOpen && <div onClick={() => setFabOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 35 }} />}
 
       <TabBar screen={screen} setScreen={setScreen} />
 
@@ -264,7 +264,7 @@ function Header({ totals, onSettings }) {
 function TabBar({ screen, setScreen }) {
   const tabs = [{ key: "home", label: "Home", icon: HomeIcon }, { key: "transactions", label: "Ledger", icon: ListIcon }, { key: "reports", label: "Reports", icon: PieChartIcon }, { key: "categories", label: "Categories", icon: Tags }];
   return (
-    <div style={{ position: "sticky", bottom: 0, flexShrink: 0, display: "flex", borderTop: `1px solid ${LINE}`, background: CARD, padding: "8px 6px calc(8px + env(safe-area-inset-bottom))" }}>
+    <div style={{ display: "flex", borderTop: `1px solid ${LINE}`, background: CARD, padding: "8px 6px calc(8px + env(safe-area-inset-bottom))" }}>
       {tabs.map((t) => {
         const active = screen === t.key, Ic = t.icon;
         return (
