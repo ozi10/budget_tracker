@@ -14,56 +14,56 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 /* ---------------------------------- THEME ---------------------------------- */
 const THEMES = {
   light: {
-    INK: "#1A202C", 
-    INK_SOFT: "#64748B", 
-    INK_MUTED: "#94A3B8",
-    PAPER: "#F8F7F2", 
-    PAPER_DIM: "#EFECE1",
+    INK: "#161616", 
+    INK_SOFT: "#4A4A4A", 
+    INK_MUTED: "#7A7A7A",
+    PAPER: "#F2F1ED", 
+    PAPER_DIM: "#E8E5DE",
     CARD: "#FFFFFF", 
-    CARD_MUTED: "#FBF9F4",
-    LINE: "#E5DEC9", 
-    LINE_SUBTLE: "rgba(229,222,201,0.6)",
-    RED: "#DC2626", 
-    RED_BG: "rgba(220,38,38,0.08)",
-    RED_SOFT: "#F87171",
-    GREEN: "#16A34A", 
-    GREEN_BG: "rgba(22,163,74,0.08)",
-    GREEN_SOFT: "#4ADE80",
-    GOLD: "#D97706", 
-    GOLD_SOFT: "#F59E0B", 
-    GOLD_BG: "rgba(217,119,6,0.1)",
-    SHADOW: "rgba(26,32,44,0.05)",
-    SHADOW_MD: "0 8px 24px rgba(26,32,44,0.06)",
-    SHADOW_LG: "0 14px 34px rgba(26,32,44,0.09)",
-    HEADER_BG: "#1E293B",
-    HEADER_TEXT: "#F8FAFC",
-    HEADER_MUTED: "rgba(248,250,252,0.65)"
+    CARD_MUTED: "#FAF9F6",
+    LINE: "#DDD9CE", 
+    LINE_SUBTLE: "rgba(221,217,206,0.6)",
+    RED: "#710014", 
+    RED_BG: "rgba(113,0,20,0.08)",
+    RED_SOFT: "#A85A6D",
+    GREEN: "#2D7A5F", 
+    GREEN_BG: "rgba(45,122,95,0.08)",
+    GREEN_SOFT: "#5BA892",
+    GOLD: "#B38F6F", 
+    GOLD_SOFT: "#C9A885", 
+    GOLD_BG: "rgba(179,143,111,0.1)",
+    SHADOW: "rgba(22,22,22,0.05)",
+    SHADOW_MD: "0 8px 24px rgba(22,22,22,0.06)",
+    SHADOW_LG: "0 14px 34px rgba(22,22,22,0.09)",
+    HEADER_BG: "#161616",
+    HEADER_TEXT: "#F2F1ED",
+    HEADER_MUTED: "rgba(242,241,237,0.7)"
   },
   dark: {
-    INK: "#F1F5F9", 
-    INK_SOFT: "#94A3B8", 
-    INK_MUTED: "#64748B",
-    PAPER: "#0B0F17", 
-    PAPER_DIM: "#131A26",
-    CARD: "#151D2A", 
-    CARD_MUTED: "#192231",
-    LINE: "#222D3E", 
-    LINE_SUBTLE: "rgba(34,45,62,0.7)",
-    RED: "#F87171", 
-    RED_BG: "rgba(248,113,113,0.12)",
-    RED_SOFT: "#FCA5A5",
-    GREEN: "#4ADE80", 
-    GREEN_BG: "rgba(74,222,128,0.12)",
-    GREEN_SOFT: "#86EFAC",
-    GOLD: "#FBBF24", 
-    GOLD_SOFT: "#FDE68A", 
-    GOLD_BG: "rgba(251,191,36,0.12)",
+    INK: "#F2F1ED", 
+    INK_SOFT: "#C9C7BE", 
+    INK_MUTED: "#A5A19A",
+    PAPER: "#161616", 
+    PAPER_DIM: "#1F1F1F",
+    CARD: "#252525", 
+    CARD_MUTED: "#2D2D2D",
+    LINE: "#3A3835", 
+    LINE_SUBTLE: "rgba(58,56,53,0.7)",
+    RED: "#D97077", 
+    RED_BG: "rgba(217,112,119,0.12)",
+    RED_SOFT: "#E8959B",
+    GREEN: "#5BA892", 
+    GREEN_BG: "rgba(91,168,146,0.12)",
+    GREEN_SOFT: "#7DBCA8",
+    GOLD: "#C9A885", 
+    GOLD_SOFT: "#DCC0A0", 
+    GOLD_BG: "rgba(201,168,133,0.12)",
     SHADOW: "rgba(0,0,0,0.4)",
     SHADOW_MD: "0 8px 24px rgba(0,0,0,0.35)",
     SHADOW_LG: "0 14px 34px rgba(0,0,0,0.45)",
-    HEADER_BG: "#111827",
-    HEADER_TEXT: "#F9FAFB",
-    HEADER_MUTED: "#9CA3AF"
+    HEADER_BG: "#1A1A1A",
+    HEADER_TEXT: "#F2F1ED",
+    HEADER_MUTED: "#9A9894"
   }
 };
 const F_DISPLAY = "'Fraunces', Georgia, serif", F_BODY = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", F_MONO = "'IBM Plex Mono', ui-monospace, monospace";
@@ -74,7 +74,7 @@ const ICONS = {
   phone: Smartphone, paw: PawPrint, wrench: Wrench, trend: TrendingUp, wallet: Wallet, home: HomeIcon,
 };
 const ICON_KEYS = Object.keys(ICONS);
-const COLOR_PRESETS = ["#EF4444", "#10B981", "#3B82F6", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#F97316", "#14B8A6", "#64748B", "#6366F1", "#E11D48", "#0EA5E9", "#D97706", "#84CC16", "#A855F7"];
+const COLOR_PRESETS = ["#710014", "#2D7A5F", "#B38F6F", "#A85A6D", "#5BA892", "#1A4D3E", "#8B6B47", "#6B3A52", "#4A7C6B", "#161616", "#6B5B4F", "#9A6F5A", "#5A6B7A", "#7A5B6B", "#3D6B5A", "#8B7A5A"];
 
 /* -------------------------------- HELPERS ---------------------------------- */
 const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
@@ -1164,7 +1164,7 @@ function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }
         <Field label="Amount" T={T}>
           <div style={{ position: "relative" }}>
             <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: T.INK_SOFT, fontSize: 18, fontWeight: 700 }}>₹</span>
-            <input autoFocus type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00 (or e.g. 400 + 800)" style={{ ...inputStyleThemed, paddingLeft: 34, fontFamily: F_MONO, fontSize: 20, fontWeight: 700 }} />
+            <input autoFocus type="text" inputMode="text" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00 (or e.g. 400 + 800)" style={{ ...inputStyleThemed, paddingLeft: 34, fontFamily: F_MONO, fontSize: 20, fontWeight: 700 }} />
             {evaluated !== null && evaluated !== Number(amount) && (
               <div style={{ marginTop: 8, padding: "8px 12px", borderRadius: 10, background: T.PAPER_DIM, fontFamily: F_MONO, fontSize: 13, color: T.INK, fontWeight: 600, border: `1px solid ${T.LINE}` }}>
                 = {fmtAmount(evaluated)}
