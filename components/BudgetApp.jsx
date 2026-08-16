@@ -633,7 +633,7 @@ function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }
         animation: "popIn .18s ease" 
       }}>
       <span style={{ 
-        background: T.INK, 
+        background: "#161616", 
         color: "#FFFFFF", 
         fontSize: 12.5, 
         fontWeight: 600, 
@@ -641,7 +641,7 @@ function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }
         borderRadius: 12, 
         whiteSpace: "nowrap", 
         boxShadow: T.SHADOW_MD,
-        border: `1px solid ${T.INK}`
+        border: `1px solid #161616`
       }}>
         {label}
       </span>
