@@ -323,13 +323,17 @@ function SectionTitle({ children, action, onAction, T = THEMES.light }) {
 /* ============================== MAIN APP ================================ */
 export default function BudgetApp() {
   const { data: session } = useSession();
-  const [theme, setTheme] = useState(() => {
+  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState('light');
+  
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('budget-theme');
-      return saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      const preferredTheme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      setTheme(preferredTheme);
+      setMounted(true);
     }
-    return 'light';
-  });
+  }, []);
   const [aiApiKey, setAiApiKey] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('budget-ai-key') || "";
     return "";
@@ -414,7 +418,7 @@ export default function BudgetApp() {
   }
   function openAddTx() { setEditingTx({ type: "expense", amount: "", categoryId: categories.find((c) => c.type !== "income")?.id || categories[0]?.id, note: "", date: todayISO() }); setFabOpen(false); }
 
-  if (loading) {
+  if (loading || !mounted) {
     return (
       <div style={{ height: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: T.PAPER, color: T.INK_SOFT, fontFamily: F_BODY, gap: 12 }}>
         <Loader2 size={28} color={T.GOLD} className="animate-spin" />
@@ -629,15 +633,15 @@ function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }
         animation: "popIn .18s ease" 
       }}>
       <span style={{ 
-        background: T.CARD, 
-        color: T.INK, 
+        background: T.INK, 
+        color: "#FFFFFF", 
         fontSize: 12.5, 
         fontWeight: 600, 
         padding: "7px 12px", 
         borderRadius: 12, 
         whiteSpace: "nowrap", 
         boxShadow: T.SHADOW_MD,
-        border: `1px solid ${T.LINE}`
+        border: `1px solid ${T.INK}`
       }}>
         {label}
       </span>
@@ -1194,7 +1198,7 @@ function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }
           </div>
         </Field>
         <Field label="Description" T={T}><input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Dinner with team" style={inputStyleThemed} /></Field>
-        <Field label="Date" T={T}><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyleThemed} /></Field>
+        <Field label="Date" T={T}><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...inputStyleThemed, padding: "10px 12px", fontSize: 14 }} /></Field>
       </div>
     </Sheet>
   );
@@ -1438,7 +1442,7 @@ function AIModal({ categories, onClose, onImport, onCreateCategory, apiKey, T = 
                     <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, fontSize: 13, color: T.INK_SOFT }}>₹</span>
                     <input type="number" value={r.amount} onChange={(e) => updateRow(r.rid, { amount: Number(e.target.value) })} style={{ ...getInputStyle(T), padding: "8px 8px 8px 24px", fontFamily: F_MONO, fontSize: 14, fontWeight: 700 }} />
                   </div>
-                  <input type="date" value={r.date} onChange={(e) => updateRow(r.rid, { date: e.target.value })} style={{ ...getInputStyle(T), padding: "8px 10px", fontSize: 12.5, flex: 1 }} />
+                  <input type="date" value={r.date} onChange={(e) => updateRow(r.rid, { date: e.target.value })} style={{ ...getInputStyle(T), padding: "8px 10px", fontSize: 11, flex: 1, minWidth: 0 }} />
                 </div>
                 <input value={r.note} onChange={(e) => updateRow(r.rid, { note: e.target.value })} placeholder="Merchant or note" style={{ ...getInputStyle(T), padding: "8px 12px", fontSize: 13, marginBottom: 8 }} />
                 <select value={r.categoryId || "__new__"} onChange={(e) => updateRow(r.rid, { categoryId: e.target.value === "__new__" ? null : e.target.value })} style={{ ...getInputStyle(T), padding: "8px 12px", fontSize: 13 }}>
