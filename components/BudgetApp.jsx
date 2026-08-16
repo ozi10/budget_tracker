@@ -30,7 +30,15 @@ const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR",
 const fmtAmount = (n) => inr.format(Math.round(Number(n) || 0));
 const toDateInput = (iso) => new Date(iso).toISOString().slice(0, 10);
 const todayISO = () => new Date().toISOString().slice(0, 10);
-
+function evaluateExpression(expr) {
+  const trimmed = String(expr).trim();
+  if (!trimmed) return null;
+  if (!/^[\d+\-*/.\\s()]+$/.test(trimmed)) return null;
+  try {
+    const result = Function('\"use strict\"; return (' + trimmed + ')')();
+    return typeof result === 'number' && result > 0 ? result : null;
+  } catch { return null; }
+}
 function fmtDateHeader(iso) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const yest = new Date(today); yest.setDate(yest.getDate() - 1);
@@ -215,7 +223,7 @@ export default function BudgetApp() {
 
       <Header totals={totals} onSettings={() => setShowSettings(true)} />
 
-      <div style={{ overflowY: "auto", overflowX: "hidden", padding: "0 16px 20px" }}>
+      <div style={{ overflowY: "auto", overflowX: "hidden", padding: "0 16px 20px", minHeight: 0 }}>
         {screen === "home" && <HomeScreen monthTotals={monthTotals} transactions={transactions} catById={catById} onSeeAll={(f) => { setTxFilter(f || "all"); setScreen("transactions"); }} onOpenTx={(t) => setEditingTx(t)} />}
         {screen === "transactions" && <TransactionsScreen transactions={transactions} catById={catById} filter={txFilter} setFilter={setTxFilter} onOpenTx={(t) => setEditingTx(t)} />}
         {screen === "reports" && <ReportsScreen transactions={transactions} catById={catById} month={reportMonth} setMonth={setReportMonth} />}
@@ -465,14 +473,16 @@ function TxModal({ tx, categories, onClose, onSave, onDelete }) {
   const [date, setDate] = useState(tx.date ? toDateInput(tx.date) : todayISO());
   const availableCats = categories.filter((c) => c.type === type || c.type === "both");
   useEffect(() => { if (!availableCats.find((c) => c.id === categoryId)) setCategoryId(availableCats[0]?.id); }, [type]); // eslint-disable-line
-  const canSave = amount && Number(amount) > 0 && categoryId;
+  const evaluated = evaluateExpression(amount);
+  const finalAmount = evaluated !== null ? evaluated : Number(amount);
+  const canSave = amount && finalAmount > 0 && categoryId;
 
   return (
     <Sheet title={tx.id ? "Edit transaction" : "Add transaction"} onClose={onClose}
       footer={
         <div style={{ display: "flex", gap: 10 }}>
           {tx.id && <button onClick={() => onDelete(tx.id)} style={{ width: 46, height: 46, borderRadius: 12, border: `1.5px solid ${RED}55`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Trash2 size={18} color={RED} /></button>}
-          <div style={{ flex: 1 }}><PrimaryButton disabled={!canSave} color={type === "expense" ? RED : GREEN} onClick={() => onSave({ type, amount: Number(amount), categoryId, note: note.trim(), date }, tx.id)}><Check size={16} /> Save</PrimaryButton></div>
+          <div style={{ flex: 1 }}><PrimaryButton disabled={!canSave} color={type === "expense" ? RED : GREEN} onClick={() => onSave({ type, amount: finalAmount, categoryId, note: note.trim(), date }, tx.id)}><Check size={16} /> Save</PrimaryButton></div>
         </div>
       }>
       <SegmentedControl value={type} onChange={setType} accent={type === "expense" ? RED : GREEN} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }]} />
@@ -480,7 +490,12 @@ function TxModal({ tx, categories, onClose, onSave, onDelete }) {
         <Field label="Amount">
           <div style={{ position: "relative" }}>
             <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: INK_SOFT }}>₹</span>
-            <input autoFocus type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" style={{ ...inputStyle, paddingLeft: 26, fontFamily: F_MONO, fontSize: 18, fontWeight: 600 }} />
+            <input autoFocus type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g. 400 + 800 + 900" style={{ ...inputStyle, paddingLeft: 26, fontFamily: F_MONO, fontSize: 18, fontWeight: 600 }} />
+            {evaluated !== null && evaluated !== Number(amount) && (
+              <div style={{ marginTop: 8, padding: "8px 10px", borderRadius: 8, background: PAPER_DIM, fontFamily: F_MONO, fontSize: 13, color: INK, fontWeight: 600 }}>
+                = {fmtAmount(evaluated)}
+              </div>
+            )}
           </div>
         </Field>
         <Field label="Category">
