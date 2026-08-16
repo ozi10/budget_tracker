@@ -84,9 +84,9 @@ function SegmentedControl({ options, value, onChange, accent }) {
 }
 function Sheet({ title, onClose, children, footer }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
       <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(28,37,54,0.45)", animation: "fadeIn .18s ease" }} />
-      <div style={{ position: "relative", background: PAPER, borderRadius: "20px 20px 0 0", maxHeight: "88vh", display: "flex", flexDirection: "column", animation: "slideUp .22s cubic-bezier(.2,.8,.3,1)", boxShadow: "0 -8px 30px rgba(0,0,0,0.25)", maxWidth: 430, margin: "0 auto", width: "100%" }}>
+      <div style={{ position: "relative", background: PAPER, borderRadius: "20px 20px 0 0", maxHeight: "88%", display: "flex", flexDirection: "column", animation: "slideUp .22s cubic-bezier(.2,.8,.3,1)", boxShadow: "0 -8px 30px rgba(0,0,0,0.25)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px 12px", borderBottom: `1px solid ${LINE}` }}>
           <span style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 19, color: INK }}>{title}</span>
           <button onClick={onClose} style={{ background: PAPER_DIM, border: "none", borderRadius: "50%", width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={16} color={INK_SOFT} /></button>
@@ -200,11 +200,11 @@ export default function BudgetApp() {
   function openAddTx() { setEditingTx({ type: "expense", amount: "", categoryId: categories.find((c) => c.type !== "income")?.id || categories[0]?.id, note: "", date: todayISO() }); setFabOpen(false); }
 
   if (loading) {
-    return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: PAPER, color: INK_SOFT, fontFamily: F_BODY }}>Loading your ledger…</div>;
+    return <div style={{ height: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: PAPER, color: INK_SOFT, fontFamily: F_BODY }}>Loading your ledger…</div>;
   }
 
   return (
-    <div style={{ position: "relative", minHeight: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", background: PAPER, fontFamily: F_BODY }}>
+    <div style={{ position: "relative", height: "100dvh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", background: PAPER, fontFamily: F_BODY, overflow: "hidden" }}>
       <style>{`
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -222,7 +222,7 @@ export default function BudgetApp() {
         {screen === "categories" && <CategoriesScreen categories={categories} transactions={transactions} onAdd={() => setEditingCat({ name: "", icon: "wallet", color: COLOR_PRESETS[0], type: "expense" })} onEdit={(c) => setEditingCat(c)} onDelete={removeCategory} />}
       </div>
 
-      <div style={{ position: "fixed", right: "calc(50% - 215px + 16px)", bottom: 82, zIndex: 40, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+      <div style={{ position: "absolute", right: 16, bottom: 82, zIndex: 40, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
         {fabOpen && (
           <>
             <FabAction label="AI capture" icon={Sparkles} color={GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow />
@@ -231,7 +231,7 @@ export default function BudgetApp() {
         )}
         <button onClick={() => setFabOpen((v) => !v)} style={{ width: 56, height: 56, borderRadius: "50%", border: "none", background: INK, color: PAPER, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 18px rgba(28,37,54,0.4)", transform: fabOpen ? "rotate(45deg)" : "rotate(0)", transition: "transform .2s" }}><Plus size={26} /></button>
       </div>
-      {fabOpen && <div onClick={() => setFabOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 35 }} />}
+      {fabOpen && <div onClick={() => setFabOpen(false)} style={{ position: "absolute", inset: 0, zIndex: 35 }} />}
 
       <TabBar screen={screen} setScreen={setScreen} />
 
@@ -246,7 +246,7 @@ export default function BudgetApp() {
 function Header({ totals, onSettings }) {
   const dateStr = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
   return (
-    <div style={{ padding: "18px 18px 14px", flexShrink: 0, background: INK, color: PAPER, borderRadius: "0 0 18px 18px" }}>
+    <div style={{ padding: "calc(18px + env(safe-area-inset-top)) 18px 14px", flexShrink: 0, background: INK, color: PAPER, borderRadius: "0 0 18px 18px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div style={{ fontSize: 11.5, opacity: 0.65, letterSpacing: 0.5, textTransform: "uppercase" }}>{dateStr}</div>
