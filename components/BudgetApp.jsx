@@ -215,14 +215,14 @@ export default function BudgetApp() {
 
       <Header totals={totals} onSettings={() => setShowSettings(true)} />
 
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 100px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 16px calc(100px + env(safe-area-inset-bottom))" }}>
         {screen === "home" && <HomeScreen monthTotals={monthTotals} transactions={transactions} catById={catById} onSeeAll={(f) => { setTxFilter(f || "all"); setScreen("transactions"); }} onOpenTx={(t) => setEditingTx(t)} />}
         {screen === "transactions" && <TransactionsScreen transactions={transactions} catById={catById} filter={txFilter} setFilter={setTxFilter} onOpenTx={(t) => setEditingTx(t)} />}
         {screen === "reports" && <ReportsScreen transactions={transactions} catById={catById} month={reportMonth} setMonth={setReportMonth} />}
         {screen === "categories" && <CategoriesScreen categories={categories} transactions={transactions} onAdd={() => setEditingCat({ name: "", icon: "wallet", color: COLOR_PRESETS[0], type: "expense" })} onEdit={(c) => setEditingCat(c)} onDelete={removeCategory} />}
       </div>
 
-      <div style={{ position: "absolute", right: 16, bottom: 82, zIndex: 40, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+      <div style={{ position: "absolute", right: 16, bottom: "calc(82px + env(safe-area-inset-bottom))", zIndex: 40, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
         {fabOpen && (
           <>
             <FabAction label="AI capture" icon={Sparkles} color={GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow />
