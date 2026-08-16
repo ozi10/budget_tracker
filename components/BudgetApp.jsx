@@ -14,14 +14,36 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 /* ---------------------------------- THEME ---------------------------------- */
 const THEMES = {
   light: {
-    INK: "#1C2536", INK_SOFT: "#4A5268", PAPER: "#F6F1E4", PAPER_DIM: "#EFE7D3",
-    CARD: "#FFFFFF", LINE: "#E0D9C7", RED: "#B33A3A", GREEN: "#3A6B52",
-    GOLD: "#B8860B", GOLD_SOFT: "#E4C77B", SHADOW: "rgba(28,37,54,0.08)"
+    INK: "#1C2536", 
+    INK_SOFT: "#5A6478", 
+    PAPER: "#F6F1E4", 
+    PAPER_DIM: "#EFE7D3",
+    CARD: "#FFFFFF", 
+    LINE: "#E0D9C7", 
+    RED: "#B33A3A", 
+    GREEN: "#2E7D32",
+    GOLD: "#B8860B", 
+    GOLD_SOFT: "#E4C77B", 
+    SHADOW: "rgba(28,37,54,0.08)",
+    HEADER_BG: "#1C2536",
+    HEADER_TEXT: "#F6F1E4",
+    HEADER_MUTED: "rgba(246,241,228,0.7)"
   },
   dark: {
-    INK: "#F6F1E4", INK_SOFT: "#C9C2B8", PAPER: "#0F1419", PAPER_DIM: "#1A2029",
-    CARD: "#161C23", LINE: "#2A3139", RED: "#E08A8A", GREEN: "#6BB88A",
-    GOLD: "#E4C77B", GOLD_SOFT: "#B8860B", SHADOW: "rgba(0,0,0,0.3)"
+    INK: "#F0F4F8", 
+    INK_SOFT: "#94A3B8", 
+    PAPER: "#0D1117", 
+    PAPER_DIM: "#161B22",
+    CARD: "#161B22", 
+    LINE: "#28303C", 
+    RED: "#F87171", 
+    GREEN: "#4ADE80",
+    GOLD: "#E4C77B", 
+    GOLD_SOFT: "#B8860B", 
+    SHADOW: "rgba(0,0,0,0.4)",
+    HEADER_BG: "#161B22",
+    HEADER_TEXT: "#F0F4F8",
+    HEADER_MUTED: "#94A3B8"
   }
 };
 const F_DISPLAY = "'Fraunces', Georgia, serif", F_BODY = "'Inter', -apple-system, sans-serif", F_MONO = "'IBM Plex Mono', ui-monospace, monospace";
@@ -42,9 +64,9 @@ const todayISO = () => new Date().toISOString().slice(0, 10);
 function evaluateExpression(expr) {
   const trimmed = String(expr).trim();
   if (!trimmed) return null;
-  if (!/^[\d+\-*/.\\s()]+$/.test(trimmed)) return null;
+  if (!/^[\d+\-*/.\s()]+$/.test(trimmed)) return null;
   try {
-    const result = Function('\"use strict\"; return (' + trimmed + ')')();
+    const result = Function('"use strict"; return (' + trimmed + ')')();
     return typeof result === 'number' && result > 0 ? result : null;
   } catch { return null; }
 }
@@ -102,24 +124,37 @@ function SegmentedControl({ options, value, onChange, accent, T = THEMES.light }
 }
 function Sheet({ title, onClose, children, footer, T = THEMES.light }) {
   return (
-    <div style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(28,37,54,0.5)", animation: "fadeIn .18s ease" }} />
-      <div style={{ position: "relative", background: T.PAPER, borderRadius: "28px 28px 0 0", maxHeight: "88%", display: "flex", flexDirection: "column", animation: "slideUp .22s cubic-bezier(.2,.8,.3,1)", boxShadow: `0 -12px 40px ${T.SHADOW}` }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 20px 14px", borderBottom: `1.5px solid ${T.LINE}` }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", animation: "fadeIn .18s ease" }} />
+      <div style={{ 
+        position: "relative", 
+        background: T.PAPER, 
+        borderRadius: "24px 24px 0 0", 
+        maxHeight: "88vh", 
+        maxWidth: 480,
+        width: "100%",
+        margin: "0 auto",
+        display: "flex", 
+        flexDirection: "column", 
+        animation: "slideUp .22s cubic-bezier(.2,.8,.3,1)", 
+        boxShadow: `0 -12px 40px ${T.SHADOW}`,
+        paddingBottom: "max(8px, env(safe-area-inset-bottom, 0px))"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px 14px", borderBottom: `1.5px solid ${T.LINE}` }}>
           <span style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 20, color: T.INK }}>{title}</span>
-          <button onClick={onClose} style={{ background: T.LINE + "40", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><X size={18} color={T.INK_SOFT} /></button>
+          <button onClick={onClose} aria-label="Close" style={{ background: T.LINE + "40", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><X size={18} color={T.INK_SOFT} /></button>
         </div>
-        <div style={{ overflowY: "auto", padding: 20, flex: 1 }}>{children}</div>
+        <div style={{ overflowY: "auto", padding: 20, flex: 1, WebkitOverflowScrolling: "touch" }}>{children}</div>
         {footer && <div style={{ padding: 16, borderTop: `1.5px solid ${T.LINE}`, background: T.CARD }}>{footer}</div>}
       </div>
     </div>
   );
 }
 function PrimaryButton({ children, onClick, disabled, color, style, T = THEMES.light }) {
-  const defaultColor = color || T.INK;
+  const defaultColor = color || (T.HEADER_BG || T.INK);
   return (
     <button onClick={onClick} disabled={disabled}
-      style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "none", background: disabled ? T.LINE : defaultColor, color: T.PAPER, fontFamily: F_BODY, fontWeight: 700, fontSize: 15, cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, letterSpacing: 0.3, transition: "all .2s", boxShadow: disabled ? "none" : `0 4px 12px ${defaultColor}40`, ...style }}>
+      style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "none", background: disabled ? T.LINE : defaultColor, color: disabled ? T.INK_SOFT : (T.HEADER_TEXT || T.PAPER), fontFamily: F_BODY, fontWeight: 700, fontSize: 15, cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, letterSpacing: 0.3, transition: "all .2s", boxShadow: disabled ? "none" : `0 4px 12px ${defaultColor}30`, ...style }}>
       {children}
     </button>
   );
@@ -175,7 +210,7 @@ export default function BudgetApp() {
     if (typeof window !== 'undefined') return localStorage.getItem('budget-ai-key') || "";
     return "";
   });
-  const T = THEMES[theme];
+  const T = THEMES[theme] || THEMES.light;
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -195,6 +230,23 @@ export default function BudgetApp() {
   };
 
   useEffect(() => { localStorage.setItem('budget-ai-key', aiApiKey); }, [aiApiKey]);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.style.backgroundColor = T.PAPER;
+      document.body.style.backgroundColor = T.PAPER;
+      
+      let metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (!metaTheme) {
+        metaTheme = document.createElement('meta');
+        metaTheme.name = 'theme-color';
+        document.head.appendChild(metaTheme);
+      }
+      metaTheme.setAttribute('content', T.HEADER_BG);
+    }
+  }, [theme, T]);
+
   useEffect(() => {
     (async () => {
       try {
@@ -243,7 +295,18 @@ export default function BudgetApp() {
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", maxWidth: 430, margin: "0 auto", background: T.PAPER, fontFamily: F_BODY, overflow: "hidden", color: T.INK }}>
+    <div style={{ 
+      display: "flex", 
+      flexDirection: "column", 
+      height: "100dvh", 
+      maxWidth: 480, 
+      margin: "0 auto", 
+      background: T.PAPER, 
+      fontFamily: F_BODY, 
+      overflow: "hidden", 
+      color: T.INK,
+      position: "relative"
+    }}>
       <style>{`
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -254,21 +317,30 @@ export default function BudgetApp() {
 
       <Header totals={totals} onSettings={() => setShowSettings(true)} T={T} />
 
-      <div style={{ overflowY: "auto", overflowX: "hidden", padding: "0 16px 20px", minHeight: 0 }}>
+      <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", padding: "0 16px 24px", minHeight: 0 }}>
         {screen === "home" && <HomeScreen monthTotals={monthTotals} transactions={transactions} catById={catById} onSeeAll={(f) => { setTxFilter(f || "all"); setScreen("transactions"); }} onOpenTx={(t) => setEditingTx(t)} T={T} />}
         {screen === "transactions" && <TransactionsScreen transactions={transactions} catById={catById} filter={txFilter} setFilter={setTxFilter} onOpenTx={(t) => setEditingTx(t)} T={T} />}
         {screen === "reports" && <ReportsScreen transactions={transactions} catById={catById} month={reportMonth} setMonth={setReportMonth} T={T} />}
         {screen === "categories" && <CategoriesScreen categories={categories} transactions={transactions} onAdd={() => setEditingCat({ name: "", icon: "wallet", color: COLOR_PRESETS[0], type: "expense" })} onEdit={(c) => setEditingCat(c)} onDelete={removeCategory} T={T} />}
-      </div>
+      </main>
 
-      <div style={{ position: "fixed", right: 16, bottom: "calc(82px + env(safe-area-inset-bottom))", zIndex: 40, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10, maxWidth: 398 }}>
+      <div style={{ 
+        position: "fixed", 
+        right: "max(16px, calc((100vw - 480px) / 2 + 16px))", 
+        bottom: "calc(max(12px, env(safe-area-inset-bottom, 0px)) + 64px)", 
+        zIndex: 40, 
+        display: "flex", 
+        flexDirection: "column", 
+        alignItems: "flex-end", 
+        gap: 10 
+      }}>
         {fabOpen && (
           <>
-            <FabAction label="AI capture" icon={Sparkles} color={T.GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow />
+            <FabAction label="AI capture" icon={Sparkles} color={T.GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow T={T} />
             <FabAction label="Add manually" icon={Plus} color={T.INK} onClick={openAddTx} T={T} />
           </>
         )}
-        <button onClick={() => setFabOpen((v) => !v)} style={{ width: 56, height: 56, borderRadius: "50%", border: "none", background: T.INK, color: T.PAPER, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: `0 6px 18px ${T.SHADOW}`, transform: fabOpen ? "rotate(45deg)" : "rotate(0)", transition: "transform .2s" }}><Plus size={26} /></button>
+        <button onClick={() => setFabOpen((v) => !v)} aria-label="Add" style={{ width: 56, height: 56, borderRadius: "50%", border: "none", background: T.HEADER_BG || T.INK, color: T.HEADER_TEXT || T.PAPER, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: `0 6px 18px ${T.SHADOW}`, transform: fabOpen ? "rotate(45deg)" : "rotate(0)", transition: "transform .2s" }}><Plus size={26} /></button>
       </div>
       {fabOpen && <div onClick={() => setFabOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 35 }} />}
 
@@ -285,31 +357,57 @@ export default function BudgetApp() {
 function Header({ totals, onSettings, T }) {
   const dateStr = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
   return (
-    <div style={{ padding: "calc(18px + env(safe-area-inset-top)) 18px 14px", flexShrink: 0, background: T.INK, color: T.PAPER, borderRadius: "0 0 24px 24px", boxShadow: `0 4px 12px ${T.SHADOW}` }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ 
+      paddingTop: "max(16px, env(safe-area-inset-top, 0px))", 
+      paddingLeft: 18, 
+      paddingRight: 18, 
+      paddingBottom: 16, 
+      flexShrink: 0, 
+      background: T.HEADER_BG, 
+      color: T.HEADER_TEXT, 
+      borderBottom: `1px solid ${T.LINE}`, 
+      boxShadow: `0 4px 12px ${T.SHADOW}` 
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
         <div>
-          <div style={{ fontSize: 11.5, opacity: 0.65, letterSpacing: 0.5, textTransform: "uppercase" }}>{dateStr}</div>
-          <div style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 15.5, marginTop: 2 }}>Ledger</div>
+          <div style={{ fontSize: 11.5, color: T.HEADER_MUTED, letterSpacing: 0.5, textTransform: "uppercase", fontWeight: 500 }}>{dateStr}</div>
+          <div style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 18, marginTop: 2, color: T.HEADER_TEXT }}>Ledger</div>
         </div>
-        <button onClick={onSettings} style={{ width: 40, height: 40, borderRadius: "50%", background: T.GOLD_SOFT + "1a", border: `2px solid ${T.GOLD_SOFT}40`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><SettingsIcon size={18} color={T.GOLD_SOFT} /></button>
+        <button onClick={onSettings} aria-label="Settings" style={{ width: 40, height: 40, borderRadius: "50%", background: T.GOLD_SOFT + "22", border: `1.5px solid ${T.GOLD_SOFT}55`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><SettingsIcon size={18} color={T.GOLD_SOFT} /></button>
       </div>
-      <div style={{ marginTop: 18 }}>
-        <div style={{ fontSize: 11, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.6 }}>Total balance</div>
-        <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 32, marginTop: 4, color: totals.balance < 0 ? "#E08A8A" : T.PAPER }}>{fmtAmount(totals.balance)}</div>
+      <div style={{ marginTop: 16 }}>
+        <div style={{ fontSize: 11, color: T.HEADER_MUTED, textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 500 }}>Total balance</div>
+        <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 32, marginTop: 4, color: totals.balance < 0 ? T.RED : T.HEADER_TEXT }}>{fmtAmount(totals.balance)}</div>
       </div>
     </div>
   );
 }
 function TabBar({ screen, setScreen, T }) {
-  const tabs = [{ key: "home", label: "Home", icon: HomeIcon }, { key: "transactions", label: "Ledger", icon: ListIcon }, { key: "reports", label: "Reports", icon: PieChartIcon }, { key: "categories", label: "Categories", icon: Tags }];
+  const tabs = [
+    { key: "home", label: "Home", icon: HomeIcon }, 
+    { key: "transactions", label: "Ledger", icon: ListIcon }, 
+    { key: "reports", label: "Reports", icon: PieChartIcon }, 
+    { key: "categories", label: "Categories", icon: Tags }
+  ];
   return (
-    <div style={{ display: "flex", borderTop: `1.5px solid ${T.LINE}`, background: T.CARD, padding: "10px 8px calc(10px + env(safe-area-inset-bottom))", boxShadow: `0 -4px 12px ${T.SHADOW}` }}>
+    <div style={{ 
+      display: "flex", 
+      borderTop: `1px solid ${T.LINE}`, 
+      background: T.CARD, 
+      paddingTop: 8,
+      paddingLeft: 8,
+      paddingRight: 8,
+      paddingBottom: "max(12px, env(safe-area-inset-bottom, 0px))", 
+      boxShadow: `0 -4px 16px ${T.SHADOW}`,
+      flexShrink: 0,
+      zIndex: 30
+    }}>
       {tabs.map((t) => {
         const active = screen === t.key, Ic = t.icon;
         return (
-          <button key={t.key} onClick={() => setScreen(t.key)} style={{ flex: 1, background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 0", cursor: "pointer", transition: "all .2s", opacity: active ? 1 : 0.6 }}>
-            <Ic size={22} color={active ? T.INK : T.INK_SOFT} strokeWidth={active ? 2.4 : 2} />
-            <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, color: active ? T.INK : T.INK_SOFT }}>{t.label}</span>
+          <button key={t.key} onClick={() => setScreen(t.key)} style={{ flex: 1, background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 0", cursor: "pointer", transition: "all .2s", opacity: active ? 1 : 0.55 }}>
+            <Ic size={22} color={active ? (T.GOLD || T.INK) : T.INK_SOFT} strokeWidth={active ? 2.4 : 2} />
+            <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 500, color: active ? (T.GOLD || T.INK) : T.INK_SOFT }}>{t.label}</span>
           </button>
         );
       })}
@@ -319,7 +417,7 @@ function TabBar({ screen, setScreen, T }) {
 function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }) {
   return (
     <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", animation: "popIn .18s ease" }}>
-      <span style={{ background: T.INK, color: T.PAPER, fontSize: 12.5, fontWeight: 600, padding: "6px 10px", borderRadius: 8, whiteSpace: "nowrap", boxShadow: `0 2px 8px ${T.SHADOW}` }}>{label}</span>
+      <span style={{ background: T.HEADER_BG || T.INK, color: T.HEADER_TEXT || T.PAPER, fontSize: 12.5, fontWeight: 600, padding: "6px 10px", borderRadius: 8, whiteSpace: "nowrap", boxShadow: `0 2px 8px ${T.SHADOW}` }}>{label}</span>
       <span style={{ width: 46, height: 46, borderRadius: "50%", background: color, color: T.PAPER, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 4px 14px ${T.SHADOW}`, animation: glow ? "glow 1.8s infinite" : "none" }}><Icon size={20} /></span>
     </button>
   );
