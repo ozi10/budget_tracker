@@ -17,16 +17,17 @@ model User {
 }
 
 model Category {
-  id           String        @id @default(cuid())
-  userId       String
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name         String
-  icon         String
-  color        String
-  type         String // "expense" | "income" | "both"
-  locked       Boolean       @default(false)
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  icon          String
+  color         String
+  type          String // "expense" | "income" | "both"
+  locked        Boolean       @default(false)
+  monthlyBudget Float? // Monthly spending budget/limit in currency
+  transactions  Transaction[]
+  createdAt     DateTime      @default(now())
 
   @@index([userId])
 }

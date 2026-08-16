@@ -14,6 +14,9 @@ export async function PUT(req, { params }) {
   const existing = await assertOwnership(session.user.id, params.id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const body = await req.json();
+  const monthlyBudget = body.monthlyBudget !== undefined 
+    ? (body.monthlyBudget && Number(body.monthlyBudget) > 0 ? Number(body.monthlyBudget) : null)
+    : existing.monthlyBudget;
   const updated = await prisma.category.update({
     where: { id: params.id },
     data: {
@@ -21,6 +24,7 @@ export async function PUT(req, { params }) {
       icon: body.icon || existing.icon,
       color: body.color || existing.color,
       type: body.type || existing.type,
+      monthlyBudget: monthlyBudget,
     },
   });
   return NextResponse.json(updated);

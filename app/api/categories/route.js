@@ -15,6 +15,9 @@ export async function POST(req) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
   if (!body.name || !body.name.trim()) return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  const monthlyBudget = body.monthlyBudget !== undefined && body.monthlyBudget !== null && body.monthlyBudget !== ""
+    ? Number(body.monthlyBudget)
+    : null;
   const category = await prisma.category.create({
     data: {
       userId: session.user.id,
@@ -22,6 +25,7 @@ export async function POST(req) {
       icon: body.icon || "wallet",
       color: body.color || "#6B6252",
       type: body.type || "expense",
+      monthlyBudget: monthlyBudget && monthlyBudget > 0 ? monthlyBudget : null,
       locked: false,
     },
   });

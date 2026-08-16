@@ -7,46 +7,66 @@ import {
   PieChart as PieChartIcon, Tags, ShoppingCart, Utensils, Car, Zap, Film,
   HeartPulse, GraduationCap, Plane, Gift, Briefcase, Coffee, Smartphone,
   PawPrint, Wrench, TrendingUp, Loader2, FileText, AlertCircle, Pencil,
-  ReceiptText, LogOut, Settings as SettingsIcon,
+  ReceiptText, LogOut, Settings as SettingsIcon, Moon, Sun, DollarSign
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 /* ---------------------------------- THEME ---------------------------------- */
 const THEMES = {
   light: {
-    INK: "#1C2536", 
-    INK_SOFT: "#5A6478", 
-    PAPER: "#F6F1E4", 
-    PAPER_DIM: "#EFE7D3",
+    INK: "#1A202C", 
+    INK_SOFT: "#64748B", 
+    INK_MUTED: "#94A3B8",
+    PAPER: "#F8F7F2", 
+    PAPER_DIM: "#EFECE1",
     CARD: "#FFFFFF", 
-    LINE: "#E0D9C7", 
-    RED: "#B33A3A", 
-    GREEN: "#2E7D32",
-    GOLD: "#B8860B", 
-    GOLD_SOFT: "#E4C77B", 
-    SHADOW: "rgba(28,37,54,0.08)",
-    HEADER_BG: "#1C2536",
-    HEADER_TEXT: "#F6F1E4",
-    HEADER_MUTED: "rgba(246,241,228,0.7)"
+    CARD_MUTED: "#FBF9F4",
+    LINE: "#E5DEC9", 
+    LINE_SUBTLE: "rgba(229,222,201,0.6)",
+    RED: "#DC2626", 
+    RED_BG: "rgba(220,38,38,0.08)",
+    RED_SOFT: "#F87171",
+    GREEN: "#16A34A", 
+    GREEN_BG: "rgba(22,163,74,0.08)",
+    GREEN_SOFT: "#4ADE80",
+    GOLD: "#D97706", 
+    GOLD_SOFT: "#F59E0B", 
+    GOLD_BG: "rgba(217,119,6,0.1)",
+    SHADOW: "rgba(26,32,44,0.05)",
+    SHADOW_MD: "0 8px 24px rgba(26,32,44,0.06)",
+    SHADOW_LG: "0 14px 34px rgba(26,32,44,0.09)",
+    HEADER_BG: "#1E293B",
+    HEADER_TEXT: "#F8FAFC",
+    HEADER_MUTED: "rgba(248,250,252,0.65)"
   },
   dark: {
-    INK: "#F0F4F8", 
+    INK: "#F1F5F9", 
     INK_SOFT: "#94A3B8", 
-    PAPER: "#0D1117", 
-    PAPER_DIM: "#161B22",
-    CARD: "#161B22", 
-    LINE: "#28303C", 
+    INK_MUTED: "#64748B",
+    PAPER: "#0B0F17", 
+    PAPER_DIM: "#131A26",
+    CARD: "#151D2A", 
+    CARD_MUTED: "#192231",
+    LINE: "#222D3E", 
+    LINE_SUBTLE: "rgba(34,45,62,0.7)",
     RED: "#F87171", 
-    GREEN: "#4ADE80",
-    GOLD: "#E4C77B", 
-    GOLD_SOFT: "#B8860B", 
+    RED_BG: "rgba(248,113,113,0.12)",
+    RED_SOFT: "#FCA5A5",
+    GREEN: "#4ADE80", 
+    GREEN_BG: "rgba(74,222,128,0.12)",
+    GREEN_SOFT: "#86EFAC",
+    GOLD: "#FBBF24", 
+    GOLD_SOFT: "#FDE68A", 
+    GOLD_BG: "rgba(251,191,36,0.12)",
     SHADOW: "rgba(0,0,0,0.4)",
-    HEADER_BG: "#161B22",
-    HEADER_TEXT: "#F0F4F8",
-    HEADER_MUTED: "#94A3B8"
+    SHADOW_MD: "0 8px 24px rgba(0,0,0,0.35)",
+    SHADOW_LG: "0 14px 34px rgba(0,0,0,0.45)",
+    HEADER_BG: "#111827",
+    HEADER_TEXT: "#F9FAFB",
+    HEADER_MUTED: "#9CA3AF"
   }
 };
-const F_DISPLAY = "'Fraunces', Georgia, serif", F_BODY = "'Inter', -apple-system, sans-serif", F_MONO = "'IBM Plex Mono', ui-monospace, monospace";
+const F_DISPLAY = "'Fraunces', Georgia, serif", F_BODY = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", F_MONO = "'IBM Plex Mono', ui-monospace, monospace";
 
 const ICONS = {
   cart: ShoppingCart, food: Utensils, car: Car, bolt: Zap, film: Film, health: HeartPulse,
@@ -54,7 +74,7 @@ const ICONS = {
   phone: Smartphone, paw: PawPrint, wrench: Wrench, trend: TrendingUp, wallet: Wallet, home: HomeIcon,
 };
 const ICON_KEYS = Object.keys(ICONS);
-const COLOR_PRESETS = ["#B33A3A", "#3A6B52", "#3A5B8A", "#8A6D3B", "#6B4A8A", "#8A3A6B", "#3A8A6E", "#8A5A2A", "#2A7A5A", "#6B6252", "#4A5A9A", "#8A4A4A", "#4A7A8A", "#7A5A3A", "#5A7A3A", "#9A5A7A"];
+const COLOR_PRESETS = ["#EF4444", "#10B981", "#3B82F6", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#F97316", "#14B8A6", "#64748B", "#6366F1", "#E11D48", "#0EA5E9", "#D97706", "#84CC16", "#A855F7"];
 
 /* -------------------------------- HELPERS ---------------------------------- */
 const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
@@ -102,98 +122,202 @@ async function api(path, opts = {}) {
 }
 
 /* ------------------------------ SMALL UI -------------------------------- */
-function IconStamp({ icon, color, size = 40, T = THEMES.light }) {
+function IconStamp({ icon, color, size = 42, T = THEMES.light }) {
   const Ic = ICONS[icon] || Wallet;
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: color + "20", border: `2px solid ${color}40`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Ic size={size * 0.5} color={color} strokeWidth={2.2} />
+    <div style={{ 
+      width: size, 
+      height: size, 
+      borderRadius: Math.round(size * 0.38), 
+      flexShrink: 0, 
+      background: color + "18", 
+      border: `1px solid ${color}35`, 
+      display: "flex", 
+      alignItems: "center", 
+      justifyContent: "center",
+      boxShadow: `0 2px 8px ${color}15`
+    }}>
+      <Ic size={Math.round(size * 0.48)} color={color} strokeWidth={2.2} />
     </div>
   );
 }
+
 function SegmentedControl({ options, value, onChange, accent, T = THEMES.light }) {
   return (
-    <div style={{ display: "flex", background: T.PAPER_DIM, borderRadius: 14, padding: 4, border: `1.5px solid ${T.LINE}` }}>
+    <div style={{ 
+      display: "flex", 
+      background: T.PAPER_DIM, 
+      borderRadius: 16, 
+      padding: 4, 
+      border: `1px solid ${T.LINE}`,
+      boxShadow: "inset 0 1px 3px rgba(0,0,0,0.04)"
+    }}>
       {options.map((opt) => (
         <button key={opt.value} onClick={() => onChange(opt.value)}
-          style={{ flex: 1, padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: F_BODY, fontWeight: 600, fontSize: 13, background: value === opt.value ? T.CARD : "transparent", color: value === opt.value ? (accent || T.INK) : T.INK_SOFT, boxShadow: value === opt.value ? `0 2px 6px ${T.SHADOW}` : "none", transition: "all .2s" }}>
+          style={{ 
+            flex: 1, 
+            padding: "9px 12px", 
+            borderRadius: 12, 
+            border: "none", 
+            cursor: "pointer", 
+            fontFamily: F_BODY, 
+            fontWeight: 600, 
+            fontSize: 13, 
+            background: value === opt.value ? T.CARD : "transparent", 
+            color: value === opt.value ? (accent || T.INK) : T.INK_SOFT, 
+            boxShadow: value === opt.value ? `0 2px 8px ${T.SHADOW}` : "none", 
+            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+          }}>
           {opt.label}
         </button>
       ))}
     </div>
   );
 }
+
 function Sheet({ title, onClose, children, footer, T = THEMES.light }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", animation: "fadeIn .18s ease" }} />
+    <div style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", animation: "fadeIn .2s ease" }} />
       <div style={{ 
         position: "relative", 
-        background: T.PAPER, 
-        borderRadius: "24px 24px 0 0", 
-        maxHeight: "88vh", 
+        background: T.CARD, 
+        borderRadius: "28px 28px 0 0", 
+        maxHeight: "90vh", 
         maxWidth: 480,
         width: "100%",
         margin: "0 auto",
         display: "flex", 
         flexDirection: "column", 
-        animation: "slideUp .22s cubic-bezier(.2,.8,.3,1)", 
-        boxShadow: `0 -12px 40px ${T.SHADOW}`,
-        paddingBottom: "max(8px, env(safe-area-inset-bottom, 0px))"
+        animation: "slideUp .24s cubic-bezier(.16,1,.3,1)", 
+        boxShadow: T.SHADOW_LG,
+        border: `1px solid ${T.LINE}`,
+        borderBottom: "none",
+        paddingBottom: "max(10px, env(safe-area-inset-bottom, 0px))"
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px 14px", borderBottom: `1.5px solid ${T.LINE}` }}>
+        {/* Grab indicator */}
+        <div style={{ width: 38, height: 4.5, borderRadius: 3, background: T.LINE, margin: "10px auto 4px", opacity: 0.8 }} />
+        
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px 14px", borderBottom: `1px solid ${T.LINE}` }}>
           <span style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 20, color: T.INK }}>{title}</span>
-          <button onClick={onClose} aria-label="Close" style={{ background: T.LINE + "40", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><X size={18} color={T.INK_SOFT} /></button>
+          <button onClick={onClose} aria-label="Close" style={{ background: T.PAPER_DIM, border: `1px solid ${T.LINE}`, borderRadius: "50%", width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .18s" }}><X size={16} color={T.INK_SOFT} /></button>
         </div>
         <div style={{ overflowY: "auto", padding: 20, flex: 1, WebkitOverflowScrolling: "touch" }}>{children}</div>
-        {footer && <div style={{ padding: 16, borderTop: `1.5px solid ${T.LINE}`, background: T.CARD }}>{footer}</div>}
+        {footer && <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.LINE}`, background: T.PAPER_DIM, borderRadius: "0 0 28px 28px" }}>{footer}</div>}
       </div>
     </div>
   );
 }
+
 function PrimaryButton({ children, onClick, disabled, color, style, T = THEMES.light }) {
-  const defaultColor = color || (T.HEADER_BG || T.INK);
+  const defaultColor = color || T.INK;
   return (
     <button onClick={onClick} disabled={disabled}
-      style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "none", background: disabled ? T.LINE : defaultColor, color: disabled ? T.INK_SOFT : (T.HEADER_TEXT || T.PAPER), fontFamily: F_BODY, fontWeight: 700, fontSize: 15, cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, letterSpacing: 0.3, transition: "all .2s", boxShadow: disabled ? "none" : `0 4px 12px ${defaultColor}30`, ...style }}>
+      style={{ 
+        width: "100%", 
+        padding: "14px 18px", 
+        borderRadius: 16, 
+        border: "none", 
+        background: disabled ? T.LINE : defaultColor, 
+        color: disabled ? T.INK_SOFT : "#FFFFFF", 
+        fontFamily: F_BODY, 
+        fontWeight: 700, 
+        fontSize: 15, 
+        cursor: disabled ? "not-allowed" : "pointer", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center", 
+        gap: 8, 
+        letterSpacing: 0.2, 
+        transition: "all 0.2s ease", 
+        boxShadow: disabled ? "none" : `0 6px 16px ${defaultColor}30`, 
+        ...style 
+      }}>
       {children}
     </button>
   );
 }
+
 function Field({ label, children, T = THEMES.light }) {
   return (
     <div style={{ marginBottom: 18 }}>
-      <div style={{ fontFamily: F_BODY, fontSize: 11, fontWeight: 700, color: T.INK_SOFT, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.7 }}>{label}</div>
+      <div style={{ fontFamily: F_BODY, fontSize: 11, fontWeight: 700, color: T.INK_SOFT, marginBottom: 7, textTransform: "uppercase", letterSpacing: 0.6 }}>{label}</div>
       {children}
     </div>
   );
 }
-const getInputStyle = (T) => ({ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${T.LINE}`, background: T.CARD, fontFamily: F_BODY, fontSize: 15, color: T.INK, outline: "none", boxSizing: "border-box", transition: "all .2s" });
-const inputStyle = getInputStyle(THEMES.light);
 
-function TransactionRow({ t, category, onClick, T = THEMES.light }) {
+const getInputStyle = (T) => ({ 
+  width: "100%", 
+  padding: "12px 16px", 
+  borderRadius: 14, 
+  border: `1px solid ${T.LINE}`, 
+  background: T.PAPER, 
+  fontFamily: F_BODY, 
+  fontSize: 15, 
+  color: T.INK, 
+  outline: "none", 
+  boxSizing: "border-box", 
+  transition: "all .2s ease" 
+});
+
+function TransactionRow({ t, category, onClick, isLast, T = THEMES.light }) {
   const isExpense = t.type === "expense";
   return (
-    <button onClick={onClick} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "13px 4px", background: "transparent", border: "none", borderBottom: `1.5px solid ${T.LINE}40`, cursor: "pointer", textAlign: "left", transition: "all .2s" }}>
-      <IconStamp icon={category?.icon || "wallet"} color={category?.color || "#6B6252"} T={T} />
+    <button onClick={onClick} 
+      style={{ 
+        width: "100%", 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 14, 
+        padding: "12px 6px", 
+        background: "transparent", 
+        border: "none", 
+        borderBottom: isLast ? "none" : `1px solid ${T.LINE_SUBTLE}`, 
+        cursor: "pointer", 
+        textAlign: "left", 
+        transition: "all 0.15s ease" 
+      }}>
+      <IconStamp icon={category?.icon || "wallet"} color={category?.color || "#64748B"} size={42} T={T} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: F_BODY, fontWeight: 600, fontSize: 14.5, color: T.INK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.note || category?.name || "Transaction"}</div>
-        <div style={{ fontFamily: F_BODY, fontSize: 12, color: T.INK_SOFT, marginTop: 2 }}>{category?.name || "Other"}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+          <span style={{ fontSize: 11.5, color: T.INK_SOFT }}>{category?.name || "Other"}</span>
+          {t.source && t.source !== "manual" && (
+            <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 6, background: T.GOLD_BG, color: T.GOLD, fontWeight: 600 }}>AI</span>
+          )}
+        </div>
       </div>
-      <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 14.5, color: isExpense ? T.RED : T.GREEN, flexShrink: 0 }}>{isExpense ? "−" : "+"}{fmtAmount(t.amount)}</div>
+      <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 15, color: isExpense ? T.RED : T.GREEN, flexShrink: 0, letterSpacing: -0.2 }}>
+        {isExpense ? "−" : "+"}{fmtAmount(t.amount)}
+      </div>
     </button>
   );
 }
+
 function EmptyState({ icon: Icon, title, sub, T = THEMES.light }) {
   return (
-    <div style={{ textAlign: "center", padding: "40px 20px", color: T.INK_SOFT }}>
-      <div style={{ width: 60, height: 60, borderRadius: "50%", background: T.PAPER_DIM, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Icon size={28} color={T.INK_SOFT} /></div>
-      <div style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 17, color: T.INK, marginBottom: 6 }}>{title}</div>
-      <div style={{ fontFamily: F_BODY, fontSize: 13, maxWidth: 240, margin: "0 auto", lineHeight: 1.6, color: T.INK_SOFT }}>{sub}</div>
+    <div style={{ textAlign: "center", padding: "36px 20px", color: T.INK_SOFT }}>
+      <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.PAPER_DIM, border: `1px solid ${T.LINE}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: `0 4px 12px ${T.SHADOW}` }}>
+        <Icon size={24} color={T.INK_SOFT} />
+      </div>
+      <div style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 17, color: T.INK, marginBottom: 4 }}>{title}</div>
+      <div style={{ fontFamily: F_BODY, fontSize: 13, maxWidth: 240, margin: "0 auto", lineHeight: 1.5, color: T.INK_SOFT }}>{sub}</div>
     </div>
   );
 }
-function SectionTitle({ children, T = THEMES.light }) {
-  return <div style={{ marginTop: 26, marginBottom: 10, fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 18, color: T.INK }}>{children}</div>;
+
+function SectionTitle({ children, action, onAction, T = THEMES.light }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 24, marginBottom: 12 }}>
+      <div style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 17.5, color: T.INK }}>{children}</div>
+      {action && onAction && (
+        <button onClick={onAction} style={{ background: "none", border: "none", color: T.GOLD, fontSize: 12.5, fontWeight: 600, cursor: "pointer", padding: "2px 4px" }}>
+          {action}
+        </button>
+      )}
+    </div>
+  );
 }
 
 /* ============================== MAIN APP ================================ */
@@ -291,7 +415,12 @@ export default function BudgetApp() {
   function openAddTx() { setEditingTx({ type: "expense", amount: "", categoryId: categories.find((c) => c.type !== "income")?.id || categories[0]?.id, note: "", date: todayISO() }); setFabOpen(false); }
 
   if (loading) {
-    return <div style={{ height: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: T.PAPER, color: T.INK_SOFT, fontFamily: F_BODY }}>Loading your ledger…</div>;
+    return (
+      <div style={{ height: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: T.PAPER, color: T.INK_SOFT, fontFamily: F_BODY, gap: 12 }}>
+        <Loader2 size={28} color={T.GOLD} className="animate-spin" />
+        <span style={{ fontSize: 14, fontWeight: 500 }}>Loading your ledger…</span>
+      </div>
+    );
   }
 
   return (
@@ -310,25 +439,38 @@ export default function BudgetApp() {
       <style>{`
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes glow { 0%,100% { box-shadow: 0 0 0 0 rgba(184,134,11,0.35); } 50% { box-shadow: 0 0 0 8px rgba(184,134,11,0); } }
-        input:focus, textarea:focus, select:focus { border-color: ${T.GOLD} !important; }
+        @keyframes popIn { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes glow { 0%,100% { box-shadow: 0 0 0 0 rgba(217,119,6,0.35); } 50% { box-shadow: 0 0 0 8px rgba(217,119,6,0); } }
+        input:focus, textarea:focus, select:focus { border-color: ${T.GOLD} !important; outline: none; box-shadow: 0 0 0 3px ${T.GOLD}20 !important; }
       `}</style>
 
-      <Header totals={totals} onSettings={() => setShowSettings(true)} T={T} />
+      <Header totals={totals} onSettings={() => setShowSettings(true)} toggleTheme={toggleTheme} currentTheme={theme} T={T} />
 
-      <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", padding: "0 16px 24px", minHeight: 0 }}>
-        {screen === "home" && <HomeScreen monthTotals={monthTotals} transactions={transactions} catById={catById} onSeeAll={(f) => { setTxFilter(f || "all"); setScreen("transactions"); }} onOpenTx={(t) => setEditingTx(t)} T={T} />}
+      <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", padding: "0 16px 28px", minHeight: 0 }}>
+        {screen === "home" && (
+          <HomeScreen 
+            monthTotals={monthTotals} 
+            transactions={transactions} 
+            categories={categories}
+            catById={catById} 
+            onSeeAll={(f) => { setTxFilter(f || "all"); setScreen("transactions"); }} 
+            onOpenTx={(t) => setEditingTx(t)} 
+            onEditCat={(c) => setEditingCat(c)}
+            onGoCategories={() => setScreen("categories")}
+            T={T} 
+          />
+        )}
         {screen === "transactions" && <TransactionsScreen transactions={transactions} catById={catById} filter={txFilter} setFilter={setTxFilter} onOpenTx={(t) => setEditingTx(t)} T={T} />}
-        {screen === "reports" && <ReportsScreen transactions={transactions} catById={catById} month={reportMonth} setMonth={setReportMonth} T={T} />}
-        {screen === "categories" && <CategoriesScreen categories={categories} transactions={transactions} onAdd={() => setEditingCat({ name: "", icon: "wallet", color: COLOR_PRESETS[0], type: "expense" })} onEdit={(c) => setEditingCat(c)} onDelete={removeCategory} T={T} />}
+        {screen === "reports" && <ReportsScreen transactions={transactions} categories={categories} catById={catById} month={reportMonth} setMonth={setReportMonth} T={T} />}
+        {screen === "categories" && <CategoriesScreen categories={categories} transactions={transactions} onAdd={() => setEditingCat({ name: "", icon: "wallet", color: COLOR_PRESETS[0], type: "expense", monthlyBudget: null })} onEdit={(c) => setEditingCat(c)} onDelete={removeCategory} T={T} />}
       </main>
 
+      {/* Floating Action Button with Backdrop */}
       <div style={{ 
         position: "fixed", 
         right: "max(16px, calc((100vw - 480px) / 2 + 16px))", 
         bottom: "calc(max(12px, env(safe-area-inset-bottom, 0px)) + 64px)", 
-        zIndex: 40, 
+        zIndex: 50, 
         display: "flex", 
         flexDirection: "column", 
         alignItems: "flex-end", 
@@ -336,13 +478,30 @@ export default function BudgetApp() {
       }}>
         {fabOpen && (
           <>
-            <FabAction label="AI capture" icon={Sparkles} color={T.GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow T={T} />
+            <FabAction label="AI scan" icon={Sparkles} color={T.GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow T={T} />
             <FabAction label="Add manually" icon={Plus} color={T.INK} onClick={openAddTx} T={T} />
           </>
         )}
-        <button onClick={() => setFabOpen((v) => !v)} aria-label="Add" style={{ width: 56, height: 56, borderRadius: "50%", border: "none", background: T.HEADER_BG || T.INK, color: T.HEADER_TEXT || T.PAPER, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: `0 6px 18px ${T.SHADOW}`, transform: fabOpen ? "rotate(45deg)" : "rotate(0)", transition: "transform .2s" }}><Plus size={26} /></button>
+        <button onClick={() => setFabOpen((v) => !v)} aria-label="Add transaction" 
+          style={{ 
+            width: 58, 
+            height: 58, 
+            borderRadius: 20, 
+            border: `1px solid ${T.GOLD}40`, 
+            background: T.GOLD, 
+            color: "#FFFFFF", 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            cursor: "pointer", 
+            boxShadow: `0 8px 20px ${T.GOLD}40`, 
+            transform: fabOpen ? "rotate(45deg) scale(0.95)" : "rotate(0) scale(1)", 
+            transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)" 
+          }}>
+          <Plus size={28} strokeWidth={2.5} />
+        </button>
       </div>
-      {fabOpen && <div onClick={() => setFabOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 35 }} />}
+      {fabOpen && <div onClick={() => setFabOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 45, background: "rgba(0,0,0,0.3)", backdropFilter: "blur(2px)", WebkitBackdropFilter: "blur(2px)" }} />}
 
       <TabBar screen={screen} setScreen={setScreen} T={T} />
 
@@ -354,11 +513,11 @@ export default function BudgetApp() {
   );
 }
 
-function Header({ totals, onSettings, T }) {
-  const dateStr = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+function Header({ totals, onSettings, toggleTheme, currentTheme, T }) {
+  const dateStr = new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
   return (
     <div style={{ 
-      paddingTop: "max(16px, env(safe-area-inset-top, 0px))", 
+      paddingTop: "max(14px, env(safe-area-inset-top, 0px))", 
       paddingLeft: 18, 
       paddingRight: 18, 
       paddingBottom: 16, 
@@ -366,22 +525,50 @@ function Header({ totals, onSettings, T }) {
       background: T.HEADER_BG, 
       color: T.HEADER_TEXT, 
       borderBottom: `1px solid ${T.LINE}`, 
-      boxShadow: `0 4px 12px ${T.SHADOW}` 
+      boxShadow: T.SHADOW_MD 
     }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
-        <div>
-          <div style={{ fontSize: 11.5, color: T.HEADER_MUTED, letterSpacing: 0.5, textTransform: "uppercase", fontWeight: 500 }}>{dateStr}</div>
-          <div style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 18, marginTop: 2, color: T.HEADER_TEXT }}>Ledger</div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: T.GOLD + "25", border: `1px solid ${T.GOLD}50`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Wallet size={18} color={T.GOLD_SOFT} />
+          </div>
+          <div>
+            <div style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 18, color: T.HEADER_TEXT, letterSpacing: -0.3 }}>Ledger</div>
+            <div style={{ fontSize: 11, color: T.HEADER_MUTED, letterSpacing: 0.4, textTransform: "uppercase", fontWeight: 600 }}>{dateStr}</div>
+          </div>
         </div>
-        <button onClick={onSettings} aria-label="Settings" style={{ width: 40, height: 40, borderRadius: "50%", background: T.GOLD_SOFT + "22", border: `1.5px solid ${T.GOLD_SOFT}55`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><SettingsIcon size={18} color={T.GOLD_SOFT} /></button>
+        
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={toggleTheme} aria-label="Toggle Theme" 
+            style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}>
+            {currentTheme === 'light' ? <Moon size={16} color={T.HEADER_TEXT} /> : <Sun size={16} color={T.GOLD_SOFT} />}
+          </button>
+          <button onClick={onSettings} aria-label="Settings" 
+            style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}>
+            <SettingsIcon size={16} color={T.HEADER_TEXT} />
+          </button>
+        </div>
       </div>
-      <div style={{ marginTop: 16 }}>
-        <div style={{ fontSize: 11, color: T.HEADER_MUTED, textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 500 }}>Total balance</div>
-        <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 32, marginTop: 4, color: totals.balance < 0 ? T.RED : T.HEADER_TEXT }}>{fmtAmount(totals.balance)}</div>
+
+      {/* Balance Card Section */}
+      <div style={{ marginTop: 16, padding: "14px 16px", borderRadius: 18, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div>
+          <div style={{ fontSize: 11, color: T.HEADER_MUTED, textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 600 }}>Net Balance</div>
+          <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 28, marginTop: 4, color: totals.balance < 0 ? T.RED_SOFT : T.HEADER_TEXT, letterSpacing: -0.5 }}>
+            {fmtAmount(totals.balance)}
+          </div>
+        </div>
+        <div style={{ padding: "4px 10px", borderRadius: 20, background: totals.balance >= 0 ? T.GREEN_BG : T.RED_BG, border: `1px solid ${totals.balance >= 0 ? T.GREEN : T.RED}40`, display: "flex", alignItems: "center", gap: 4 }}>
+          {totals.balance >= 0 ? <ArrowUpRight size={13} color={T.GREEN_SOFT} /> : <ArrowDownRight size={13} color={T.RED_SOFT} />}
+          <span style={{ fontSize: 11, fontWeight: 700, color: totals.balance >= 0 ? T.GREEN_SOFT : T.RED_SOFT, fontFamily: F_MONO }}>
+            {totals.balance >= 0 ? "Positive" : "Deficit"}
+          </span>
+        </div>
       </div>
     </div>
   );
 }
+
 function TabBar({ screen, setScreen, T }) {
   const tabs = [
     { key: "home", label: "Home", icon: HomeIcon }, 
@@ -394,85 +581,327 @@ function TabBar({ screen, setScreen, T }) {
       display: "flex", 
       borderTop: `1px solid ${T.LINE}`, 
       background: T.CARD, 
-      paddingTop: 8,
-      paddingLeft: 8,
-      paddingRight: 8,
-      paddingBottom: "max(12px, env(safe-area-inset-bottom, 0px))", 
-      boxShadow: `0 -4px 16px ${T.SHADOW}`,
+      paddingTop: 6,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingBottom: "max(10px, env(safe-area-inset-bottom, 0px))", 
+      boxShadow: T.SHADOW_MD,
       flexShrink: 0,
-      zIndex: 30
+      zIndex: 40
     }}>
       {tabs.map((t) => {
         const active = screen === t.key, Ic = t.icon;
         return (
-          <button key={t.key} onClick={() => setScreen(t.key)} style={{ flex: 1, background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 0", cursor: "pointer", transition: "all .2s", opacity: active ? 1 : 0.55 }}>
-            <Ic size={22} color={active ? (T.GOLD || T.INK) : T.INK_SOFT} strokeWidth={active ? 2.4 : 2} />
-            <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 500, color: active ? (T.GOLD || T.INK) : T.INK_SOFT }}>{t.label}</span>
+          <button key={t.key} onClick={() => setScreen(t.key)} 
+            style={{ 
+              flex: 1, 
+              background: active ? T.GOLD_BG : "transparent", 
+              border: "none", 
+              borderRadius: 14,
+              display: "flex", 
+              flexDirection: "column", 
+              alignItems: "center", 
+              gap: 4, 
+              padding: "7px 4px", 
+              cursor: "pointer", 
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)", 
+              opacity: active ? 1 : 0.6 
+            }}>
+            <Ic size={20} color={active ? T.GOLD : T.INK_SOFT} strokeWidth={active ? 2.5 : 2} />
+            <span style={{ fontSize: 11, fontWeight: active ? 700 : 500, color: active ? (T.INK || T.GOLD) : T.INK_SOFT }}>{t.label}</span>
           </button>
         );
       })}
     </div>
   );
 }
+
 function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }) {
   return (
-    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", animation: "popIn .18s ease" }}>
-      <span style={{ background: T.HEADER_BG || T.INK, color: T.HEADER_TEXT || T.PAPER, fontSize: 12.5, fontWeight: 600, padding: "6px 10px", borderRadius: 8, whiteSpace: "nowrap", boxShadow: `0 2px 8px ${T.SHADOW}` }}>{label}</span>
-      <span style={{ width: 46, height: 46, borderRadius: "50%", background: color, color: T.PAPER, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 4px 14px ${T.SHADOW}`, animation: glow ? "glow 1.8s infinite" : "none" }}><Icon size={20} /></span>
+    <button onClick={onClick} 
+      style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 10, 
+        background: "none", 
+        border: "none", 
+        cursor: "pointer", 
+        animation: "popIn .18s ease" 
+      }}>
+      <span style={{ 
+        background: T.CARD, 
+        color: T.INK, 
+        fontSize: 12.5, 
+        fontWeight: 600, 
+        padding: "7px 12px", 
+        borderRadius: 12, 
+        whiteSpace: "nowrap", 
+        boxShadow: T.SHADOW_MD,
+        border: `1px solid ${T.LINE}`
+      }}>
+        {label}
+      </span>
+      <span style={{ 
+        width: 46, 
+        height: 46, 
+        borderRadius: 16, 
+        background: color, 
+        color: "#FFFFFF", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center", 
+        boxShadow: `0 6px 16px ${color}35`, 
+        animation: glow ? "glow 1.8s infinite" : "none" 
+      }}>
+        <Icon size={20} strokeWidth={2.2} />
+      </span>
     </button>
   );
 }
 
-function HomeScreen({ monthTotals, transactions, catById, onSeeAll, onOpenTx, T = THEMES.light }) {
+function HomeScreen({ monthTotals, transactions, categories, catById, onSeeAll, onOpenTx, onEditCat, onGoCategories, T = THEMES.light }) {
   const recent = transactions.slice(0, 5);
   const thisMonth = new Date();
+
+  // Category spending calculation for current month
+  const categorySpendMap = useMemo(() => {
+    const map = {};
+    for (const t of transactions) {
+      if (t.type === "expense" && isSameMonth(t.date, thisMonth)) {
+        map[t.categoryId] = (map[t.categoryId] || 0) + Number(t.amount);
+      }
+    }
+    return map;
+  }, [transactions, thisMonth]);
+
+  const budgetedCategories = useMemo(() => {
+    return categories
+      .filter((c) => c.monthlyBudget && Number(c.monthlyBudget) > 0)
+      .map((c) => {
+        const spent = categorySpendMap[c.id] || 0;
+        const budget = Number(c.monthlyBudget);
+        const pct = Math.round((spent / budget) * 100);
+        const isOver = spent > budget;
+        return { ...c, spent, budget, pct, isOver };
+      })
+      .sort((a, b) => b.pct - a.pct);
+  }, [categories, categorySpendMap]);
+
+  const budgetSummary = useMemo(() => {
+    let totalBudget = 0, totalSpent = 0;
+    for (const b of budgetedCategories) {
+      totalBudget += b.budget;
+      totalSpent += b.spent;
+    }
+    const overallPct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+    return { totalBudget, totalSpent, overallPct };
+  }, [budgetedCategories]);
+
   const pieData = useMemo(() => {
     const sums = {};
-    for (const t of transactions) { if (t.type !== "expense" || !isSameMonth(t.date, thisMonth)) continue; sums[t.categoryId] = (sums[t.categoryId] || 0) + Number(t.amount); }
-    return Object.entries(sums).map(([id, value]) => ({ id, value, name: catById[id]?.name || "Other", color: catById[id]?.color || "#999" })).sort((a, b) => b.value - a.value);
+    for (const t of transactions) { 
+      if (t.type !== "expense" || !isSameMonth(t.date, thisMonth)) continue; 
+      sums[t.categoryId] = (sums[t.categoryId] || 0) + Number(t.amount); 
+    }
+    return Object.entries(sums)
+      .map(([id, value]) => ({ id, value, name: catById[id]?.name || "Other", color: catById[id]?.color || "#94A3B8" }))
+      .sort((a, b) => b.value - a.value);
   }, [transactions, catById]);
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 12, marginTop: 18 }}>
-        <button onClick={() => onSeeAll("income")} style={{ flex: 1, textAlign: "left", background: T.CARD, border: `1.5px solid ${T.LINE}`, borderRadius: 18, padding: "16px 16px", cursor: "pointer", transition: "all .2s", boxShadow: `0 2px 8px ${T.SHADOW}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.GREEN }}><ArrowUpRight size={16} /><span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Income</span></div>
-          <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 20, color: T.INK, marginTop: 8 }}>{fmtAmount(monthTotals.income)}</div>
+      {/* Quick Summary Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 18 }}>
+        <button onClick={() => onSeeAll("income")} 
+          style={{ 
+            textAlign: "left", 
+            background: T.CARD, 
+            border: `1px solid ${T.LINE}`, 
+            borderRadius: 22, 
+            padding: "16px 16px", 
+            cursor: "pointer", 
+            transition: "all .2s ease", 
+            boxShadow: T.SHADOW_MD 
+          }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.GREEN }}>
+            <div style={{ width: 26, height: 26, borderRadius: 8, background: T.GREEN_BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ArrowUpRight size={15} color={T.GREEN} />
+            </div>
+            <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Income</span>
+          </div>
+          <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 19, color: T.INK, marginTop: 10, letterSpacing: -0.3 }}>
+            {fmtAmount(monthTotals.income)}
+          </div>
         </button>
-        <button onClick={() => onSeeAll("expense")} style={{ flex: 1, textAlign: "left", background: T.CARD, border: `1.5px solid ${T.LINE}`, borderRadius: 18, padding: "16px 16px", cursor: "pointer", transition: "all .2s", boxShadow: `0 2px 8px ${T.SHADOW}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.RED }}><ArrowDownRight size={16} /><span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Expenses</span></div>
-          <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 20, color: T.INK, marginTop: 8 }}>{fmtAmount(monthTotals.expense)}</div>
+
+        <button onClick={() => onSeeAll("expense")} 
+          style={{ 
+            textAlign: "left", 
+            background: T.CARD, 
+            border: `1px solid ${T.LINE}`, 
+            borderRadius: 22, 
+            padding: "16px 16px", 
+            cursor: "pointer", 
+            transition: "all .2s ease", 
+            boxShadow: T.SHADOW_MD 
+          }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.RED }}>
+            <div style={{ width: 26, height: 26, borderRadius: 8, background: T.RED_BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ArrowDownRight size={15} color={T.RED} />
+            </div>
+            <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Expenses</span>
+          </div>
+          <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 19, color: T.INK, marginTop: 10, letterSpacing: -0.3 }}>
+            {fmtAmount(monthTotals.expense)}
+          </div>
         </button>
       </div>
-      <SectionTitle T={T}>This month's spending</SectionTitle>
-      {pieData.length === 0 ? (
-        <div style={{ background: T.CARD, border: `1.5px solid ${T.LINE}`, borderRadius: 18, padding: "20px 10px", boxShadow: `0 2px 8px ${T.SHADOW}` }}><EmptyState icon={PieChartIcon} title="No spending yet" sub="Add an expense to see your category breakdown here." T={T} /></div>
+
+      {/* Category Budgets & Visual Progress Bars Section */}
+      <SectionTitle action={budgetedCategories.length > 0 ? "Manage →" : "Set Budgets +"} onAction={onGoCategories} T={T}>
+        Category Budgets
+      </SectionTitle>
+
+      {budgetedCategories.length === 0 ? (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "20px 18px", boxShadow: T.SHADOW_MD, textAlign: "center" }}>
+          <div style={{ width: 44, height: 44, borderRadius: 14, background: T.GOLD_BG, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+            <Tags size={20} color={T.GOLD} />
+          </div>
+          <div style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 16, color: T.INK }}>No category budgets set</div>
+          <p style={{ fontSize: 12.5, color: T.INK_SOFT, margin: "4px auto 14px", maxWidth: 280, lineHeight: 1.4 }}>
+            Set monthly targets on your categories to monitor real-time spending limits.
+          </p>
+          <button onClick={onGoCategories} style={{ padding: "8px 16px", borderRadius: 12, border: `1px solid ${T.GOLD}40`, background: T.GOLD_BG, color: T.GOLD, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+            Set Category Budgets
+          </button>
+        </div>
       ) : (
-        <div style={{ background: T.CARD, border: `1.5px solid ${T.LINE}`, borderRadius: 18, padding: "14px 16px", display: "flex", alignItems: "center", gap: 10, boxShadow: `0 2px 8px ${T.SHADOW}` }}>
-          <div style={{ width: 100, height: 100, flexShrink: 0 }}>
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "16px 18px", boxShadow: T.SHADOW_MD }}>
+          {/* Overall budget health summary */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14, paddingBottom: 12, borderBottom: `1px solid ${T.LINE_SUBTLE}` }}>
+            <div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.5 }}>Total Budget Spent</span>
+              <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 16, color: T.INK, marginTop: 2 }}>
+                {fmtAmount(budgetSummary.totalSpent)} <span style={{ color: T.INK_SOFT, fontSize: 13, fontWeight: 500 }}>of {fmtAmount(budgetSummary.totalBudget)}</span>
+              </div>
+            </div>
+            <span style={{ 
+              fontFamily: F_MONO, 
+              fontWeight: 700, 
+              fontSize: 12.5, 
+              padding: "3px 8px", 
+              borderRadius: 8, 
+              background: budgetSummary.overallPct >= 100 ? T.RED_BG : budgetSummary.overallPct >= 75 ? T.GOLD_BG : T.GREEN_BG, 
+              color: budgetSummary.overallPct >= 100 ? T.RED : budgetSummary.overallPct >= 75 ? T.GOLD : T.GREEN 
+            }}>
+              {budgetSummary.overallPct}% Used
+            </span>
+          </div>
+
+          {/* Individual Category Progress Bars */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {budgetedCategories.map((b) => {
+              const statusColor = b.isOver ? T.RED : b.pct >= 75 ? T.GOLD : T.GREEN;
+              const barFill = Math.min(b.pct, 100);
+              return (
+                <div key={b.id} onClick={() => onEditCat(b)} style={{ cursor: "pointer" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <IconStamp icon={b.icon} color={b.color} size={28} T={T} />
+                      <span style={{ fontFamily: F_BODY, fontWeight: 600, fontSize: 13.5, color: T.INK }}>{b.name}</span>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <span style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 13, color: T.INK }}>
+                        {fmtAmount(b.spent)} <span style={{ color: T.INK_SOFT, fontSize: 11.5, fontWeight: 400 }}>/ {fmtAmount(b.budget)}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Progress Track */}
+                  <div style={{ height: 8, borderRadius: 8, background: T.PAPER_DIM, overflow: "hidden", position: "relative" }}>
+                    <div 
+                      style={{ 
+                        width: `${barFill}%`, 
+                        height: "100%", 
+                        borderRadius: 8, 
+                        background: statusColor, 
+                        transition: "width 0.4s ease" 
+                      }} 
+                    />
+                  </div>
+
+                  {/* Status Indicator */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                    <span style={{ fontSize: 11, color: T.INK_SOFT }}>
+                      {b.isOver ? (
+                        <span style={{ color: T.RED, fontWeight: 700 }}>⚠️ Exceeded by {fmtAmount(b.spent - b.budget)}</span>
+                      ) : (
+                        <span>{fmtAmount(b.budget - b.spent)} remaining</span>
+                      )}
+                    </span>
+                    <span style={{ fontSize: 11, fontFamily: F_MONO, fontWeight: 700, color: statusColor }}>
+                      {b.pct}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Spending Breakdown Donut Card */}
+      <SectionTitle T={T}>Monthly Spending by Category</SectionTitle>
+      {pieData.length === 0 ? (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "24px 16px", boxShadow: T.SHADOW_MD }}>
+          <EmptyState icon={PieChartIcon} title="No spending logged" sub="Add expenses to see your dynamic category distribution." T={T} />
+        </div>
+      ) : (
+        <div style={{ 
+          background: T.CARD, 
+          border: `1px solid ${T.LINE}`, 
+          borderRadius: 22, 
+          padding: "16px 18px", 
+          display: "flex", 
+          alignItems: "center", 
+          gap: 16, 
+          boxShadow: T.SHADOW_MD 
+        }}>
+          <div style={{ width: 104, height: 104, flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart><Pie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={48} strokeWidth={2} stroke={T.CARD}>{pieData.map((e, i) => <Cell key={i} fill={e.color} />)}</Pie></PieChart>
+              <PieChart>
+                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2} stroke={T.CARD}>
+                  {pieData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                </Pie>
+              </PieChart>
             </ResponsiveContainer>
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
             {pieData.slice(0, 4).map((e) => (
-              <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12 }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: e.color, flexShrink: 0 }} />
-                <span style={{ flex: 1, color: T.INK_SOFT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 12.5 }}>{e.name}</span>
-                <span style={{ fontFamily: F_MONO, color: T.INK, fontWeight: 600, fontSize: 12 }}>{fmtAmount(e.value)}</span>
+              <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+                <span style={{ width: 9, height: 9, borderRadius: 3, background: e.color, flexShrink: 0 }} />
+                <span style={{ flex: 1, color: T.INK_SOFT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 12.5, fontWeight: 500 }}>{e.name}</span>
+                <span style={{ fontFamily: F_MONO, color: T.INK, fontWeight: 600, fontSize: 12.5 }}>{fmtAmount(e.value)}</span>
               </div>
             ))}
           </div>
         </div>
       )}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 22, marginBottom: 6 }}>
-        <span style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 16, color: T.INK }}>Recent activity</span>
-        {transactions.length > 0 && <button onClick={() => onSeeAll("all")} style={{ background: "none", border: "none", color: T.GOLD, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>See all</button>}
-      </div>
+
+      {/* Recent Activity Card */}
+      <SectionTitle action={transactions.length > 0 ? "View All →" : null} onAction={() => onSeeAll("all")} T={T}>
+        Recent Activity
+      </SectionTitle>
       {recent.length === 0 ? (
-        <EmptyState icon={ReceiptText} title="No transactions yet" sub="Tap the + button to add one, or let the AI read a receipt or passbook page for you." T={T} />
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "20px", boxShadow: T.SHADOW_MD }}>
+          <EmptyState icon={ReceiptText} title="No transactions yet" sub="Tap the + button to record an expense or scan a receipt with AI." T={T} />
+        </div>
       ) : (
-        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: "4px 12px" }}>{recent.map((t) => <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} onClick={() => onOpenTx(t)} T={T} />)}</div>
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "6px 14px", boxShadow: T.SHADOW_MD }}>
+          {recent.map((t, idx) => (
+            <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} isLast={idx === recent.length - 1} onClick={() => onOpenTx(t)} T={T} />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -484,22 +913,34 @@ function TransactionsScreen({ transactions, catById, filter, setFilter, onOpenTx
   const total = useMemo(() => filtered.reduce((s, t) => s + (t.type === "expense" ? -1 : 1) * Number(t.amount), 0), [filtered]);
   return (
     <div>
-      <div style={{ marginTop: 16 }}><SegmentedControl value={filter} onChange={setFilter} options={[{ value: "all", label: "All" }, { value: "expense", label: "Expenses" }, { value: "income", label: "Income" }]} T={T} /></div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "14px 2px 4px" }}>
-        <span style={{ fontSize: 12.5, color: T.INK_SOFT, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4 }}>{filtered.length} entries</span>
-        <span style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 15, color: total < 0 ? T.RED : T.GREEN }}>{fmtAmount(total)}</span>
+      <div style={{ marginTop: 16 }}>
+        <SegmentedControl value={filter} onChange={setFilter} options={[{ value: "all", label: "All Transactions" }, { value: "expense", label: "Expenses" }, { value: "income", label: "Income" }]} T={T} />
       </div>
-      {grouped.length === 0 ? <EmptyState icon={ReceiptText} title="Nothing here yet" sub="Transactions you add will show up in this ledger, grouped by day." T={T} /> : grouped.map(([date, txs]) => (
-        <div key={date} style={{ marginTop: 14 }}>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, marginLeft: 2 }}>{fmtDateHeader(date)}</div>
-          <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: "4px 12px" }}>{txs.map((t) => <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} onClick={() => onOpenTx(t)} T={T} />)}</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "16px 4px 6px" }}>
+        <span style={{ fontSize: 12, color: T.INK_SOFT, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>{filtered.length} entries</span>
+        <span style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 16, color: total < 0 ? T.RED : T.GREEN }}>{fmtAmount(total)}</span>
+      </div>
+      {grouped.length === 0 ? (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: 20, marginTop: 8, boxShadow: T.SHADOW_MD }}>
+          <EmptyState icon={ReceiptText} title="No entries found" sub="Transactions you record will appear here grouped chronologically." T={T} />
+        </div>
+      ) : grouped.map(([date, txs]) => (
+        <div key={date} style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 6, marginLeft: 6 }}>
+            {fmtDateHeader(date)}
+          </div>
+          <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "4px 14px", boxShadow: T.SHADOW_MD }}>
+            {txs.map((t, idx) => (
+              <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} isLast={idx === txs.length - 1} onClick={() => onOpenTx(t)} T={T} />
+            ))}
+          </div>
         </div>
       ))}
     </div>
   );
 }
 
-function ReportsScreen({ transactions, catById, month, setMonth, T = THEMES.light }) {
+function ReportsScreen({ transactions, categories, catById, month, setMonth, T = THEMES.light }) {
   const monthTx = useMemo(() => transactions.filter((t) => isSameMonth(t.date, month)), [transactions, month]);
   const mIncome = monthTx.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
   const mExpense = monthTx.filter((t) => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
@@ -515,44 +956,78 @@ function ReportsScreen({ transactions, catById, month, setMonth, T = THEMES.ligh
   }, [transactions, month]);
   const pieData = useMemo(() => {
     const sums = {};
-    for (const t of monthTx) { if (t.type !== "expense") continue; sums[t.categoryId] = (sums[t.categoryId] || 0) + Number(t.amount); }
-    return Object.entries(sums).map(([id, value]) => ({ id, value, name: catById[id]?.name || "Other", color: catById[id]?.color || "#999" })).sort((a, b) => b.value - a.value);
+    for (const t of monthTx) { 
+      if (t.type !== "expense") continue; 
+      sums[t.categoryId] = (sums[t.categoryId] || 0) + Number(t.amount); 
+    }
+    return Object.entries(sums)
+      .map(([id, value]) => ({ 
+        id, 
+        value, 
+        name: catById[id]?.name || "Other", 
+        color: catById[id]?.color || "#94A3B8",
+        budget: catById[id]?.monthlyBudget ? Number(catById[id].monthlyBudget) : null
+      }))
+      .sort((a, b) => b.value - a.value);
   }, [monthTx, catById]);
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16 }}>
-        <button onClick={() => { const d = new Date(month); d.setMonth(d.getMonth() - 1); setMonth(d); }} style={{ ...navBtnStyle, border: `1px solid ${T.LINE}`, background: T.CARD }}><ChevronLeft size={18} color={T.INK} /></button>
-        <span style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 16, color: T.INK }}>{monthLabel(month)}</span>
-        <button onClick={() => { const d = new Date(month); d.setMonth(d.getMonth() + 1); setMonth(d); }} style={{ ...navBtnStyle, border: `1px solid ${T.LINE}`, background: T.CARD }}><ChevronRight size={18} color={T.INK} /></button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, background: T.CARD, padding: "8px 14px", borderRadius: 18, border: `1px solid ${T.LINE}`, boxShadow: T.SHADOW_MD }}>
+        <button onClick={() => { const d = new Date(month); d.setMonth(d.getMonth() - 1); setMonth(d); }} style={{ ...navBtnStyle, border: `1px solid ${T.LINE}`, background: T.PAPER_DIM }}><ChevronLeft size={16} color={T.INK} /></button>
+        <span style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 16, color: T.INK }}>{monthLabel(month)}</span>
+        <button onClick={() => { const d = new Date(month); d.setMonth(d.getMonth() + 1); setMonth(d); }} style={{ ...navBtnStyle, border: `1px solid ${T.LINE}`, background: T.PAPER_DIM }}><ChevronRight size={16} color={T.INK} /></button>
       </div>
-      <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 14 }}>
         <StatChip label="Income" value={mIncome} color={T.GREEN} T={T} />
         <StatChip label="Expense" value={mExpense} color={T.RED} T={T} />
         <StatChip label="Net" value={mIncome - mExpense} color={mIncome - mExpense >= 0 ? T.GREEN : T.RED} T={T} />
       </div>
-      <SectionTitle T={T}>Last 6 months</SectionTitle>
-      <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: "14px 8px 4px", height: 180 }}>
+
+      <SectionTitle T={T}>Cashflow Trend</SectionTitle>
+      <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "16px 10px 8px", height: 190, boxShadow: T.SHADOW_MD }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={barData} barGap={2}>
-            <CartesianGrid vertical={false} stroke={T.LINE} />
+          <BarChart data={barData} barGap={4}>
+            <CartesianGrid vertical={false} stroke={T.LINE} strokeDasharray="3 3" />
             <XAxis dataKey="label" tick={{ fontSize: 11, fill: T.INK_SOFT, fontFamily: F_BODY }} axisLine={{ stroke: T.LINE }} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: T.INK_SOFT, fontFamily: F_BODY }} axisLine={false} tickLine={false} width={34} />
-            <Tooltip formatter={(v) => fmtAmount(v)} contentStyle={{ fontFamily: F_BODY, fontSize: 12, borderRadius: 8, border: `1px solid ${T.LINE}`, background: T.CARD, color: T.INK }} />
-            <Bar dataKey="Income" fill={T.GREEN} radius={[3, 3, 0, 0]} />
-            <Bar dataKey="Expense" fill={T.RED} radius={[3, 3, 0, 0]} />
+            <YAxis tick={{ fontSize: 10, fill: T.INK_SOFT, fontFamily: F_BODY }} axisLine={false} tickLine={false} width={36} />
+            <Tooltip formatter={(v) => fmtAmount(v)} contentStyle={{ fontFamily: F_BODY, fontSize: 12, borderRadius: 12, border: `1px solid ${T.LINE}`, background: T.CARD, color: T.INK, boxShadow: T.SHADOW_MD }} />
+            <Bar dataKey="Income" fill={T.GREEN} radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Expense" fill={T.RED} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <SectionTitle T={T}>By category</SectionTitle>
-      {pieData.length === 0 ? <EmptyState icon={PieChartIcon} title="No expenses this month" sub="Category breakdown will appear once you log an expense." T={T} /> : (
-        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: "6px 14px" }}>
-          {pieData.map((e) => {
+
+      <SectionTitle T={T}>Category Breakdown & Limits</SectionTitle>
+      {pieData.length === 0 ? (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: 20, boxShadow: T.SHADOW_MD }}>
+          <EmptyState icon={PieChartIcon} title="No spending recorded" sub="Category distribution will appear here once expenses are logged." T={T} />
+        </div>
+      ) : (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "10px 18px", boxShadow: T.SHADOW_MD }}>
+          {pieData.map((e, idx) => {
             const pct = mExpense > 0 ? Math.round((e.value / mExpense) * 100) : 0;
+            const budgetPct = e.budget ? Math.round((e.value / e.budget) * 100) : null;
             return (
-              <div key={e.id} style={{ padding: "10px 0", borderBottom: `1px dashed ${T.LINE}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}><span style={{ color: T.INK, fontWeight: 600 }}>{e.name}</span><span style={{ fontFamily: F_MONO, color: T.INK }}>{fmtAmount(e.value)} · {pct}%</span></div>
-                <div style={{ height: 6, borderRadius: 4, background: T.PAPER_DIM, overflow: "hidden" }}><div style={{ width: pct + "%", height: "100%", background: e.color }} /></div>
+              <div key={e.id} style={{ padding: "12px 0", borderBottom: idx === pieData.length - 1 ? "none" : `1px solid ${T.LINE_SUBTLE}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, marginBottom: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 2, background: e.color }} />
+                    <span style={{ color: T.INK, fontWeight: 600 }}>{e.name}</span>
+                    {e.budget && (
+                      <span style={{ fontSize: 10.5, fontWeight: 600, padding: "1px 6px", borderRadius: 6, background: budgetPct >= 100 ? T.RED_BG : T.PAPER_DIM, color: budgetPct >= 100 ? T.RED : T.INK_SOFT }}>
+                        Budget: {fmtAmount(e.budget)}
+                      </span>
+                    )}
+                  </div>
+                  <span style={{ fontFamily: F_MONO, color: T.INK, fontWeight: 600 }}>
+                    {fmtAmount(e.value)} <span style={{ color: T.INK_SOFT, fontWeight: 400 }}>({pct}%)</span>
+                  </span>
+                </div>
+                <div style={{ height: 6, borderRadius: 6, background: T.PAPER_DIM, overflow: "hidden" }}>
+                  <div style={{ width: pct + "%", height: "100%", borderRadius: 6, background: e.color, transition: "width 0.4s ease" }} />
+                </div>
               </div>
             );
           })}
@@ -561,38 +1036,99 @@ function ReportsScreen({ transactions, catById, month, setMonth, T = THEMES.ligh
     </div>
   );
 }
-const navBtnStyle = { width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
+
+const navBtnStyle = { width: 34, height: 34, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "none" };
+
 function StatChip({ label, value, color, T = THEMES.light }) {
   return (
-    <div style={{ flex: 1, background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 12, padding: "10px 10px" }}>
-      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.3 }}>{label}</div>
-      <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 14, color, marginTop: 3 }}>{fmtAmount(value)}</div>
+    <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 18, padding: "12px 10px", textAlign: "center", boxShadow: T.SHADOW_MD }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.4 }}>{label}</div>
+      <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 14, color, marginTop: 4, letterSpacing: -0.2 }}>{fmtAmount(value)}</div>
     </div>
   );
 }
 
 function CategoriesScreen({ categories, transactions, onAdd, onEdit, onDelete, T = THEMES.light }) {
-  const usage = useMemo(() => { const m = {}; for (const t of transactions) m[t.categoryId] = (m[t.categoryId] || 0) + 1; return m; }, [transactions]);
+  const thisMonth = new Date();
+  const usage = useMemo(() => { 
+    const m = {}; 
+    for (const t of transactions) m[t.categoryId] = (m[t.categoryId] || 0) + 1; 
+    return m; 
+  }, [transactions]);
+
+  const monthSpend = useMemo(() => {
+    const m = {};
+    for (const t of transactions) {
+      if (t.type === "expense" && isSameMonth(t.date, thisMonth)) {
+        m[t.categoryId] = (m[t.categoryId] || 0) + Number(t.amount);
+      }
+    }
+    return m;
+  }, [transactions, thisMonth]);
+
   return (
     <div>
-      <div style={{ marginTop: 16, marginBottom: 10 }}><PrimaryButton onClick={onAdd} T={T}><Plus size={16} /> New category</PrimaryButton></div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {categories.map((c) => (
-          <div key={c.id} style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: 12 }}>
-            <IconStamp icon={c.icon} color={c.color} size={36} T={T} />
-            <div style={{ fontFamily: F_BODY, fontWeight: 700, fontSize: 13.5, color: T.INK, marginTop: 8 }}>{c.name}</div>
-            <div style={{ fontSize: 11, color: T.INK_SOFT, marginTop: 1, textTransform: "capitalize" }}>{c.type} · {usage[c.id] || 0} entries</div>
-            <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-              <button onClick={() => onEdit(c)} style={{ ...iconBtnStyle, borderColor: T.LINE, background: T.PAPER }}><Pencil size={13} color={T.INK_SOFT} /></button>
-              {!c.locked && <button onClick={() => onDelete(c.id)} style={{ ...iconBtnStyle, borderColor: T.RED + "40", background: T.PAPER }}><Trash2 size={13} color={T.RED} /></button>}
+      <div style={{ marginTop: 16, marginBottom: 12 }}>
+        <PrimaryButton onClick={onAdd} color={T.GOLD} T={T}><Plus size={16} strokeWidth={2.5} /> New category</PrimaryButton>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        {categories.map((c) => {
+          const budget = c.monthlyBudget ? Number(c.monthlyBudget) : null;
+          const spent = monthSpend[c.id] || 0;
+          const pct = budget ? Math.round((spent / budget) * 100) : null;
+          return (
+            <div key={c.id} style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 20, padding: "14px", boxShadow: T.SHADOW_MD, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <IconStamp icon={c.icon} color={c.color} size={40} T={T} />
+                  {budget && (
+                    <span style={{ 
+                      fontSize: 10, 
+                      fontWeight: 700, 
+                      padding: "2px 7px", 
+                      borderRadius: 8, 
+                      background: pct >= 100 ? T.RED_BG : T.GOLD_BG, 
+                      color: pct >= 100 ? T.RED : T.GOLD,
+                      fontFamily: F_MONO
+                    }}>
+                      {pct}%
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontFamily: F_BODY, fontWeight: 700, fontSize: 14, color: T.INK, marginTop: 10 }}>{c.name}</div>
+                <div style={{ fontSize: 11, color: T.INK_SOFT, marginTop: 2, textTransform: "capitalize" }}>
+                  {c.type} · {usage[c.id] || 0} txs
+                </div>
+                {budget ? (
+                  <div style={{ marginTop: 8, fontSize: 11, fontFamily: F_MONO, color: T.INK, fontWeight: 600 }}>
+                    🎯 {fmtAmount(budget)}<span style={{ color: T.INK_SOFT, fontWeight: 400 }}>/mo</span>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: 8, fontSize: 11, color: T.INK_MUTED }}>
+                    No budget limit
+                  </div>
+                )}
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button onClick={() => onEdit(c)} aria-label="Edit category" style={{ ...iconBtnStyle, flex: 1, borderColor: T.LINE, background: T.PAPER_DIM }}>
+                  <Pencil size={13} color={T.INK_SOFT} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: T.INK_SOFT, marginLeft: 4 }}>Edit</span>
+                </button>
+                {!c.locked && (
+                  <button onClick={() => onDelete(c.id)} aria-label="Delete category" style={{ ...iconBtnStyle, borderColor: T.RED + "30", background: T.RED_BG }}>
+                    <Trash2 size={13} color={T.RED} />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
-const iconBtnStyle = { width: 26, height: 26, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
+
+const iconBtnStyle = { height: 32, padding: "0 8px", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "1px solid transparent", transition: "all .15s ease" };
 
 function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }) {
   const [type, setType] = useState(tx.type);
@@ -608,21 +1144,29 @@ function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }
   const inputStyleThemed = getInputStyle(T);
 
   return (
-    <Sheet title={tx.id ? "Edit transaction" : "Add transaction"} onClose={onClose} T={T}
+    <Sheet title={tx.id ? "Edit Transaction" : "New Transaction"} onClose={onClose} T={T}
       footer={
         <div style={{ display: "flex", gap: 10 }}>
-          {tx.id && <button onClick={() => onDelete(tx.id)} style={{ width: 46, height: 46, borderRadius: 12, border: `1.5px solid ${T.RED}40`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><Trash2 size={18} color={T.RED} /></button>}
-          <div style={{ flex: 1 }}><PrimaryButton disabled={!canSave} color={type === "expense" ? T.RED : T.GREEN} onClick={() => onSave({ type, amount: finalAmount, categoryId, note: note.trim(), date }, tx.id)}><Check size={16} /> Save</PrimaryButton></div>
+          {tx.id && (
+            <button onClick={() => onDelete(tx.id)} aria-label="Delete" style={{ width: 48, height: 48, borderRadius: 14, border: `1px solid ${T.RED}35`, background: T.RED_BG, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}>
+              <Trash2 size={18} color={T.RED} />
+            </button>
+          )}
+          <div style={{ flex: 1 }}>
+            <PrimaryButton disabled={!canSave} color={type === "expense" ? T.RED : T.GREEN} onClick={() => onSave({ type, amount: finalAmount, categoryId, note: note.trim(), date }, tx.id)}>
+              <Check size={16} strokeWidth={2.5} /> Save Transaction
+            </PrimaryButton>
+          </div>
         </div>
       }>
       <SegmentedControl value={type} onChange={setType} accent={type === "expense" ? T.RED : T.GREEN} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }]} T={T} />
       <div style={{ marginTop: 20 }}>
         <Field label="Amount" T={T}>
           <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: T.INK_SOFT, fontSize: 16, fontWeight: 600 }}>₹</span>
-            <input autoFocus type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g. 400 + 800 + 900" style={{ ...inputStyleThemed, paddingLeft: 30, fontFamily: F_MONO, fontSize: 18, fontWeight: 600 }} />
+            <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: T.INK_SOFT, fontSize: 18, fontWeight: 700 }}>₹</span>
+            <input autoFocus type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00 (or e.g. 400 + 800)" style={{ ...inputStyleThemed, paddingLeft: 34, fontFamily: F_MONO, fontSize: 20, fontWeight: 700 }} />
             {evaluated !== null && evaluated !== Number(amount) && (
-              <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 10, background: T.PAPER_DIM, fontFamily: F_MONO, fontSize: 13, color: T.INK, fontWeight: 600, border: `1px solid ${T.LINE}` }}>
+              <div style={{ marginTop: 8, padding: "8px 12px", borderRadius: 10, background: T.PAPER_DIM, fontFamily: F_MONO, fontSize: 13, color: T.INK, fontWeight: 600, border: `1px solid ${T.LINE}` }}>
                 = {fmtAmount(evaluated)}
               </div>
             )}
@@ -631,13 +1175,25 @@ function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }
         <Field label="Category" T={T}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {availableCats.map((c) => (
-              <button key={c.id} onClick={() => setCategoryId(c.id)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 13px", borderRadius: 22, border: `1.5px solid ${categoryId === c.id ? c.color : T.LINE}`, background: categoryId === c.id ? c.color + "15" : T.CARD, cursor: "pointer", transition: "all .2s" }}>
-                <IconStamp icon={c.icon} color={c.color} size={20} T={T} /><span style={{ fontSize: 13, fontWeight: 600, color: T.INK }}>{c.name}</span>
+              <button key={c.id} onClick={() => setCategoryId(c.id)} 
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 7, 
+                  padding: "7px 12px", 
+                  borderRadius: 14, 
+                  border: `1.5px solid ${categoryId === c.id ? c.color : T.LINE}`, 
+                  background: categoryId === c.id ? c.color + "18" : T.PAPER, 
+                  cursor: "pointer", 
+                  transition: "all .18s ease" 
+                }}>
+                <IconStamp icon={c.icon} color={c.color} size={20} T={T} />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: T.INK }}>{c.name}</span>
               </button>
             ))}
           </div>
         </Field>
-        <Field label="Note" T={T}><input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Coffee with Priya" style={inputStyleThemed} /></Field>
+        <Field label="Description" T={T}><input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Dinner with team" style={inputStyleThemed} /></Field>
         <Field label="Date" T={T}><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyleThemed} /></Field>
       </div>
     </Sheet>
@@ -645,34 +1201,94 @@ function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }
 }
 
 function CategoryModal({ cat, onClose, onSave, onDelete, T = THEMES.light }) {
-  const [name, setName] = useState(cat.name);
-  const [icon, setIcon] = useState(cat.icon);
-  const [color, setColor] = useState(cat.color);
-  const [type, setType] = useState(cat.type);
+  const [name, setName] = useState(cat.name || "");
+  const [icon, setIcon] = useState(cat.icon || "wallet");
+  const [color, setColor] = useState(cat.color || COLOR_PRESETS[0]);
+  const [type, setType] = useState(cat.type || "expense");
+  const [monthlyBudget, setMonthlyBudget] = useState(cat.monthlyBudget ? String(cat.monthlyBudget) : "");
   const isNew = !cat.id;
   const canSave = name.trim().length > 0;
   const inputStyleThemed = getInputStyle(T);
+
+  const evaluatedBudget = evaluateExpression(monthlyBudget);
+  const finalBudgetNumber = evaluatedBudget !== null ? evaluatedBudget : (monthlyBudget.trim() ? Number(monthlyBudget) : null);
+
   return (
-    <Sheet title={isNew ? "New category" : "Edit category"} onClose={onClose} T={T}
+    <Sheet title={isNew ? "New Category" : "Edit Category"} onClose={onClose} T={T}
       footer={
         <div style={{ display: "flex", gap: 10 }}>
-          {!isNew && !cat.locked && <button onClick={() => onDelete(cat.id)} style={{ width: 46, height: 46, borderRadius: 12, border: `1.5px solid ${T.RED}55`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Trash2 size={18} color={T.RED} /></button>}
-          <div style={{ flex: 1 }}><PrimaryButton disabled={!canSave} onClick={() => onSave({ name: name.trim(), icon, color, type }, cat.id)} T={T}><Check size={16} /> Save category</PrimaryButton></div>
+          {!isNew && !cat.locked && (
+            <button onClick={() => onDelete(cat.id)} aria-label="Delete" style={{ width: 48, height: 48, borderRadius: 14, border: `1px solid ${T.RED}35`, background: T.RED_BG, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <Trash2 size={18} color={T.RED} />
+            </button>
+          )}
+          <div style={{ flex: 1 }}>
+            <PrimaryButton disabled={!canSave} color={color || T.GOLD} onClick={() => onSave({ name: name.trim(), icon, color, type, monthlyBudget: finalBudgetNumber && finalBudgetNumber > 0 ? finalBudgetNumber : null }, cat.id)} T={T}>
+              <Check size={16} strokeWidth={2.5} /> Save Category
+            </PrimaryButton>
+          </div>
         </div>
       }>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}><IconStamp icon={icon} color={color} size={64} T={T} /></div>
-      <Field label="Name" T={T}><input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Groceries" style={inputStyleThemed} /></Field>
-      <Field label="Applies to" T={T}><SegmentedControl value={type} onChange={setType} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }, { value: "both", label: "Both" }]} T={T} /></Field>
-      <Field label="Icon" T={T}>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
+        <IconStamp icon={icon} color={color} size={64} T={T} />
+      </div>
+      <Field label="Category Name" T={T}><input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Groceries" style={inputStyleThemed} /></Field>
+      <Field label="Type" T={T}><SegmentedControl value={type} onChange={setType} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }, { value: "both", label: "Both" }]} T={T} /></Field>
+      
+      {/* Monthly Budget Spending Limit */}
+      <Field label="Monthly Budget Target (Optional)" T={T}>
+        <div style={{ position: "relative" }}>
+          <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: T.INK_SOFT, fontSize: 16, fontWeight: 700 }}>₹</span>
+          <input 
+            type="text" 
+            inputMode="decimal" 
+            value={monthlyBudget} 
+            onChange={(e) => setMonthlyBudget(e.target.value)} 
+            placeholder="e.g. 10000 (or leave empty)" 
+            style={{ ...inputStyleThemed, paddingLeft: 34, fontFamily: F_MONO, fontWeight: 600 }} 
+          />
+        </div>
+        <div style={{ fontSize: 11.5, color: T.INK_SOFT, marginTop: 6, lineHeight: 1.4 }}>
+          Set a monthly target to display progress bars and spending alerts on your home screen.
+        </div>
+      </Field>
+
+      <Field label="Select Icon" T={T}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8 }}>
           {ICON_KEYS.map((k) => { const Ic = ICONS[k]; return (
-            <button key={k} onClick={() => setIcon(k)} style={{ aspectRatio: "1", borderRadius: 10, border: `1.5px solid ${icon === k ? color : T.LINE}`, background: icon === k ? color + "1c" : T.CARD, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Ic size={17} color={icon === k ? color : T.INK_SOFT} /></button>
+            <button key={k} onClick={() => setIcon(k)} 
+              style={{ 
+                aspectRatio: "1", 
+                borderRadius: 12, 
+                border: `1.5px solid ${icon === k ? color : T.LINE}`, 
+                background: icon === k ? color + "20" : T.PAPER, 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center", 
+                cursor: "pointer",
+                transition: "all .15s ease" 
+              }}>
+              <Ic size={18} color={icon === k ? color : T.INK_SOFT} />
+            </button>
           ); })}
         </div>
       </Field>
-      <Field label="Color" T={T}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {COLOR_PRESETS.map((c) => <button key={c} onClick={() => setColor(c)} style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: color === c ? `2.5px solid ${T.INK}` : "2.5px solid transparent", cursor: "pointer" }} />)}
+      <Field label="Accent Color" T={T}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
+          {COLOR_PRESETS.map((c) => (
+            <button key={c} onClick={() => setColor(c)} 
+              style={{ 
+                width: 30, 
+                height: 30, 
+                borderRadius: 10, 
+                background: c, 
+                border: color === c ? `3px solid ${T.INK}` : "1px solid rgba(0,0,0,0.1)", 
+                cursor: "pointer",
+                boxShadow: color === c ? `0 2px 8px ${c}50` : "none",
+                transform: color === c ? "scale(1.1)" : "scale(1)",
+                transition: "all .15s ease" 
+              }} />
+          ))}
         </div>
       </Field>
     </Sheet>
@@ -682,22 +1298,23 @@ function CategoryModal({ cat, onClose, onSave, onDelete, T = THEMES.light }) {
 function SettingsModal({ email, onClose, toggleTheme, currentTheme, T, apiKey, onApiKeyChange }) {
   return (
     <Sheet title="Settings" onClose={onClose} T={T}>
-      <Field label="Signed in as" T={T}><div style={{ ...getInputStyle(T), color: T.INK_SOFT, background: T.CARD, borderColor: T.LINE }}>{email}</div></Field>
-      <Field label="AI API key" T={T}>
-        <input type="password" value={apiKey} onChange={(e) => onApiKeyChange(e.target.value)} placeholder="Enter your Anthropic API key" style={{ ...getInputStyle(T), fontSize: 13 }} />
-        <div style={{ fontSize: 11.5, color: T.INK_SOFT, marginTop: 8, lineHeight: 1.5 }}>Stored on this device and used only for AI capture requests.</div>
+      <Field label="Account" T={T}>
+        <div style={{ ...getInputStyle(T), color: T.INK, background: T.PAPER_DIM, fontWeight: 500 }}>{email}</div>
       </Field>
-      <Field label="Theme" T={T}>
+      <Field label="Anthropic API Key (AI Scanning)" T={T}>
+        <input type="password" value={apiKey} onChange={(e) => onApiKeyChange(e.target.value)} placeholder="sk-ant-api03-..." style={{ ...getInputStyle(T), fontSize: 13, fontFamily: F_MONO }} />
+        <div style={{ fontSize: 11.5, color: T.INK_SOFT, marginTop: 7, lineHeight: 1.4 }}>Encrypted locally on this device for receipt OCR & statement parsing.</div>
+      </Field>
+      <Field label="Appearance" T={T}>
         <button onClick={toggleTheme}
-          style={{ width: "100%", padding: "12px 16px", borderRadius: 14, border: `2px solid ${T.GOLD}40`, background: T.GOLD + "08", color: T.GOLD, fontFamily: F_BODY, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all .2s" }}>
-          {currentTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+          style={{ width: "100%", padding: "12px 16px", borderRadius: 14, border: `1px solid ${T.LINE}`, background: T.PAPER, color: T.INK, fontFamily: F_BODY, fontWeight: 600, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all .2s" }}>
+          {currentTheme === 'light' ? <><Moon size={16} /> Switch to Dark Mode</> : <><Sun size={16} color={T.GOLD} /> Switch to Light Mode</>}
         </button>
       </Field>
       <button onClick={() => signOut({ callbackUrl: "/login" })}
-        style={{ width: "100%", padding: "12px 16px", borderRadius: 12, border: `1.5px solid ${T.RED}40`, background: "transparent", color: T.RED, fontFamily: F_BODY, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 16, transition: "all .2s" }}>
-        <LogOut size={16} /> Sign out
+        style={{ width: "100%", padding: "12px 16px", borderRadius: 14, border: `1px solid ${T.RED}35`, background: T.RED_BG, color: T.RED, fontFamily: F_BODY, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 18, transition: "all .2s" }}>
+        <LogOut size={16} /> Sign out of Ledger
       </button>
-      <p style={{ fontSize: 12, color: T.INK_SOFT, lineHeight: 1.6, marginTop: 20 }}>Your data is stored in your own private account and syncs across any device you sign into.</p>
     </Sheet>
   );
 }
@@ -725,9 +1342,9 @@ function AIModal({ categories, onClose, onImport, onCreateCategory, apiKey, T = 
         headers: apiKey ? { "x-user-ai-key": apiKey } : {},
       });
       const withIds = rows.map((r) => ({ rid: Math.random().toString(36).slice(2), ...r, include: true }));
-      if (withIds.length === 0) setError("Couldn't find any transactions in that. Try adding more detail, or a clearer photo.");
+      if (withIds.length === 0) setError("No transactions detected. Try adding more detail or uploading a clearer receipt image.");
       setResults(withIds);
-    } catch (e) { setError(e.message || "Something went wrong reading that."); }
+    } catch (e) { setError(e.message || "Unable to read. Check your connection or API key."); }
     finally { setLoading(false); }
   }
   function updateRow(rid, patch) { setResults((prev) => prev.map((r) => (r.rid === rid ? { ...r, ...patch } : r))); }
@@ -753,63 +1370,78 @@ function AIModal({ categories, onClose, onImport, onCreateCategory, apiKey, T = 
   const includedCount = results ? results.filter((r) => r.include).length : 0;
 
   return (
-    <Sheet title="AI capture" onClose={onClose} T={T}
+    <Sheet title="AI Smart Capture" onClose={onClose} T={T}
       footer={results ? (
-        <PrimaryButton disabled={includedCount === 0} color={T.GOLD} onClick={confirmImport} T={T}><Check size={16} /> Add {includedCount} transaction{includedCount === 1 ? "" : "s"}</PrimaryButton>
+        <PrimaryButton disabled={includedCount === 0} color={T.GOLD} onClick={confirmImport} T={T}>
+          <Check size={16} strokeWidth={2.5} /> Import {includedCount} transaction{includedCount === 1 ? "" : "s"}
+        </PrimaryButton>
       ) : (
-        <PrimaryButton disabled={loading || (mode === "describe" ? !text.trim() : !file)} color={T.GOLD} onClick={runParse} T={T}>{loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} {loading ? "Reading…" : "Parse with AI"}</PrimaryButton>
+        <PrimaryButton disabled={loading || (mode === "describe" ? !text.trim() : !file)} color={T.GOLD} onClick={runParse} T={T}>
+          {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} {loading ? "Analyzing receipt…" : "Extract with Claude"}
+        </PrimaryButton>
       )}>
       {!results && (
         <>
-          <SegmentedControl value={mode} onChange={(m) => { setMode(m); setError(null); }} accent={T.GOLD} options={[{ value: "describe", label: "Describe it" }, { value: "photo", label: "Photo" }]} T={T} />
+          <SegmentedControl value={mode} onChange={(m) => { setMode(m); setError(null); }} accent={T.GOLD} options={[{ value: "describe", label: "Text Description" }, { value: "photo", label: "Receipt / Photo" }]} T={T} />
           {mode === "describe" ? (
             <div style={{ marginTop: 16 }}>
-              <Field label="What happened?" T={T}><textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder="e.g. Spent ₹450 on groceries at Big Bazaar today, and got ₹250 cab to office" style={{ ...getInputStyle(T), resize: "none", lineHeight: 1.5 }} /></Field>
-              <p style={{ fontSize: 12, color: T.INK_SOFT, lineHeight: 1.5 }}>Mention what it was for, the amount, and roughly when — the AI will sort it into your categories.</p>
+              <Field label="What did you spend or receive?" T={T}>
+                <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder="e.g. Spent ₹650 on groceries at Nature's Basket and ₹320 on Uber cab" style={{ ...getInputStyle(T), resize: "none", lineHeight: 1.5 }} />
+              </Field>
+              <p style={{ fontSize: 12, color: T.INK_SOFT, lineHeight: 1.5 }}>Mention amounts and merchants — AI will auto-categorize and extract each line item.</p>
             </div>
           ) : (
             <div style={{ marginTop: 16 }}>
-              <Field label="Receipt, statement or passbook photo" T={T}>
+              <Field label="Upload Receipt or Statement" T={T}>
                 {preview ? (
-                  <div style={{ position: "relative" }}>
-                    <img src={preview} alt="preview" style={{ width: "100%", borderRadius: 12, border: `1px solid ${T.LINE}`, maxHeight: 260, objectFit: "cover" }} />
-                    <button onClick={() => { setFile(null); setPreview(null); }} style={{ position: "absolute", top: 8, right: 8, background: T.INK + "c0", border: "none", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={14} color={T.PAPER} /></button>
+                  <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", border: `1px solid ${T.LINE}` }}>
+                    <img src={preview} alt="preview" style={{ width: "100%", maxHeight: 240, objectFit: "cover", display: "block" }} />
+                    <button onClick={() => { setFile(null); setPreview(null); }} aria-label="Remove image" style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.65)", border: "none", borderRadius: "50%", width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={16} color="#FFFFFF" /></button>
                   </div>
                 ) : (
-                  <button onClick={() => fileRef.current?.click()} style={{ width: "100%", padding: "30px 12px", borderRadius: 12, border: `1.5px dashed ${T.LINE}`, background: T.PAPER_DIM, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                    <div style={{ display: "flex", gap: 10 }}><Camera size={22} color={T.INK_SOFT} /><FileText size={22} color={T.INK_SOFT} /></div>
-                    <span style={{ fontSize: 12.5, color: T.INK_SOFT, fontWeight: 600 }}>Tap to take a photo or choose one</span>
+                  <button onClick={() => fileRef.current?.click()} style={{ width: "100%", padding: "28px 16px", borderRadius: 18, border: `1.5px dashed ${T.LINE}`, background: T.PAPER, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, transition: "all .2s" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: T.GOLD_BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Camera size={22} color={T.GOLD} />
+                    </div>
+                    <span style={{ fontSize: 13, color: T.INK, fontWeight: 600 }}>Tap to snap or upload receipt</span>
+                    <span style={{ fontSize: 11.5, color: T.INK_SOFT }}>Supports paper bills, receipts, or bank statements</span>
                   </button>
                 )}
                 <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={(e) => handleFile(e.target.files?.[0])} style={{ display: "none" }} />
               </Field>
-              <p style={{ fontSize: 12, color: T.INK_SOFT, lineHeight: 1.5 }}>Works with receipts, bank statement screenshots, or passbook pages — including several transactions at once.</p>
             </div>
           )}
-          {error && <div style={{ marginTop: 14, display: "flex", gap: 8, alignItems: "flex-start", background: T.RED + "12", border: `1px solid ${T.RED}33`, borderRadius: 10, padding: "10px 12px" }}><AlertCircle size={16} color={T.RED} style={{ flexShrink: 0, marginTop: 1 }} /><span style={{ fontSize: 12.5, color: T.RED }}>{error}</span></div>}
+          {error && (
+            <div style={{ marginTop: 14, display: "flex", gap: 8, alignItems: "flex-start", background: T.RED_BG, border: `1px solid ${T.RED}35`, borderRadius: 14, padding: "12px 14px" }}>
+              <AlertCircle size={16} color={T.RED} style={{ flexShrink: 0, marginTop: 2 }} />
+              <span style={{ fontSize: 12.5, color: T.RED, lineHeight: 1.4 }}>{error}</span>
+            </div>
+          )}
         </>
       )}
       {results && (
         <div>
-          <p style={{ fontSize: 12.5, color: T.INK_SOFT, marginBottom: 12 }}>Review before adding — tap a field to fix anything the AI got wrong.</p>
+          <p style={{ fontSize: 12.5, color: T.INK_SOFT, marginBottom: 12 }}>Review detected items before saving to your ledger:</p>
           {results.map((r) => {
             const availableCats = categories.filter((c) => c.type === r.type || c.type === "both");
             return (
-              <div key={r.rid} style={{ background: r.include ? T.CARD : T.PAPER_DIM, border: `1px solid ${T.LINE}`, borderRadius: 12, padding: 12, marginBottom: 10, opacity: r.include ? 1 : 0.55 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                  <input type="checkbox" checked={r.include} onChange={(e) => updateRow(r.rid, { include: e.target.checked })} style={{ width: 16, height: 16 }} />
-                  <SegmentedControl value={r.type} onChange={(v) => updateRow(r.rid, { type: v, categoryId: null })} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }]} T={T} />
-                  <button onClick={() => removeRow(r.rid)} style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}><X size={16} color={T.INK_SOFT} /></button>
+              <div key={r.rid} style={{ background: r.include ? T.PAPER : T.PAPER_DIM, border: `1px solid ${T.LINE}`, borderRadius: 16, padding: 14, marginBottom: 10, opacity: r.include ? 1 : 0.5, transition: "all .2s" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                  <input type="checkbox" checked={r.include} onChange={(e) => updateRow(r.rid, { include: e.target.checked })} style={{ width: 18, height: 18, accentColor: T.GOLD }} />
+                  <div style={{ flex: 1 }}>
+                    <SegmentedControl value={r.type} onChange={(v) => updateRow(r.rid, { type: v, categoryId: null })} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }]} T={T} />
+                  </div>
+                  <button onClick={() => removeRow(r.rid)} aria-label="Remove item" style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><X size={16} color={T.INK_SOFT} /></button>
                 </div>
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                  <div style={{ position: "relative", flex: "0 0 40%" }}>
+                  <div style={{ position: "relative", flex: "0 0 42%" }}>
                     <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, fontSize: 13, color: T.INK_SOFT }}>₹</span>
-                    <input type="number" value={r.amount} onChange={(e) => updateRow(r.rid, { amount: Number(e.target.value) })} style={{ ...getInputStyle(T), padding: "8px 8px 8px 22px", fontFamily: F_MONO, fontSize: 13 }} />
+                    <input type="number" value={r.amount} onChange={(e) => updateRow(r.rid, { amount: Number(e.target.value) })} style={{ ...getInputStyle(T), padding: "8px 8px 8px 24px", fontFamily: F_MONO, fontSize: 14, fontWeight: 700 }} />
                   </div>
-                  <input type="date" value={r.date} onChange={(e) => updateRow(r.rid, { date: e.target.value })} style={{ ...getInputStyle(T), padding: "8px 8px", fontSize: 12.5, flex: 1 }} />
+                  <input type="date" value={r.date} onChange={(e) => updateRow(r.rid, { date: e.target.value })} style={{ ...getInputStyle(T), padding: "8px 10px", fontSize: 12.5, flex: 1 }} />
                 </div>
-                <input value={r.note} onChange={(e) => updateRow(r.rid, { note: e.target.value })} placeholder="Note" style={{ ...getInputStyle(T), padding: "8px 10px", fontSize: 13, marginBottom: 8 }} />
-                <select value={r.categoryId || "__new__"} onChange={(e) => updateRow(r.rid, { categoryId: e.target.value === "__new__" ? null : e.target.value })} style={{ ...getInputStyle(T), padding: "8px 10px", fontSize: 13 }}>
+                <input value={r.note} onChange={(e) => updateRow(r.rid, { note: e.target.value })} placeholder="Merchant or note" style={{ ...getInputStyle(T), padding: "8px 12px", fontSize: 13, marginBottom: 8 }} />
+                <select value={r.categoryId || "__new__"} onChange={(e) => updateRow(r.rid, { categoryId: e.target.value === "__new__" ? null : e.target.value })} style={{ ...getInputStyle(T), padding: "8px 12px", fontSize: 13 }}>
                   {!r.categoryId && <option value="__new__">✦ New: {r.newCategoryName}</option>}
                   {availableCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
@@ -821,3 +1453,5 @@ function AIModal({ categories, onClose, onImport, onCreateCategory, apiKey, T = 
     </Sheet>
   );
 }
+
+
