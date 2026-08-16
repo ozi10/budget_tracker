@@ -16,8 +16,11 @@ function stripToJson(text) {
 export async function POST(req) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "AI capture isn't configured on this server yet (missing ANTHROPIC_API_KEY)." }, { status: 500 });
+
+  const userApiKey = String(req.headers.get("x-user-ai-key") || "").trim();
+  const apiKey = userApiKey || process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "Add your Anthropic API key in Settings before using AI capture." }, { status: 500 });
   }
 
   const { text, imageBase64, imageMediaType } = await req.json();
@@ -46,7 +49,7 @@ Rules:
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({ model: "claude-sonnet-5", max_tokens: 2000, system, messages: [{ role: "user", content }] }),

@@ -71,8 +71,9 @@ async function fileToBase64(file) {
     r.readAsDataURL(file);
   });
 }
-async function api(path, opts) {
-  const res = await fetch(path, { headers: { "content-type": "application/json" }, ...opts });
+async function api(path, opts = {}) {
+  const headers = { "content-type": "application/json", ...(opts.headers || {}) };
+  const res = await fetch(path, { ...opts, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || "Request failed");
   return data;
@@ -170,6 +171,10 @@ export default function BudgetApp() {
     }
     return 'light';
   });
+  const [aiApiKey, setAiApiKey] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('budget-ai-key') || "";
+    return "";
+  });
   const T = THEMES[theme];
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
@@ -189,6 +194,7 @@ export default function BudgetApp() {
     localStorage.setItem('budget-theme', newTheme);
   };
 
+  useEffect(() => { localStorage.setItem('budget-ai-key', aiApiKey); }, [aiApiKey]);
   useEffect(() => {
     (async () => {
       try {
@@ -269,9 +275,9 @@ export default function BudgetApp() {
       <TabBar screen={screen} setScreen={setScreen} T={T} />
 
       {editingTx && <TxModal tx={editingTx} categories={categories} onClose={() => setEditingTx(null)} onSave={async (fields, id) => { await saveTransaction(fields, id); setEditingTx(null); }} onDelete={async (id) => { await removeTransaction(id); setEditingTx(null); }} T={T} />}
-      {showAI && <AIModal categories={categories} onClose={() => setShowAI(false)} onCreateCategory={saveCategory} onImport={async (txs) => { for (const t of txs) await saveTransaction(t); setShowAI(false); }} T={T} />}
+      {showAI && <AIModal categories={categories} onClose={() => setShowAI(false)} onCreateCategory={saveCategory} onImport={async (txs) => { for (const t of txs) await saveTransaction(t); setShowAI(false); }} apiKey={aiApiKey} T={T} />}
       {editingCat && <CategoryModal cat={editingCat} onClose={() => setEditingCat(null)} onSave={async (fields, id) => { await saveCategory(fields, id); setEditingCat(null); }} onDelete={async (id) => { await removeCategory(id); setEditingCat(null); }} T={T} />}
-      {showSettings && <SettingsModal email={session?.user?.email} onClose={() => setShowSettings(false)} toggleTheme={toggleTheme} currentTheme={theme} T={T} />}
+      {showSettings && <SettingsModal email={session?.user?.email} onClose={() => setShowSettings(false)} toggleTheme={toggleTheme} currentTheme={theme} T={T} apiKey={aiApiKey} onApiKeyChange={setAiApiKey} />}
     </div>
   );
 }
@@ -310,11 +316,11 @@ function TabBar({ screen, setScreen, T }) {
     </div>
   );
 }
-function FabAction({ label, icon: Icon, color, onClick, glow }) {
+function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }) {
   return (
     <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", animation: "popIn .18s ease" }}>
-      <span style={{ background: INK, color: PAPER, fontSize: 12.5, fontWeight: 600, padding: "6px 10px", borderRadius: 8, whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }}>{label}</span>
-      <span style={{ width: 46, height: 46, borderRadius: "50%", background: color, color: PAPER, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(0,0,0,0.3)", animation: glow ? "glow 1.8s infinite" : "none" }}><Icon size={20} /></span>
+      <span style={{ background: T.INK, color: T.PAPER, fontSize: 12.5, fontWeight: 600, padding: "6px 10px", borderRadius: 8, whiteSpace: "nowrap", boxShadow: `0 2px 8px ${T.SHADOW}` }}>{label}</span>
+      <span style={{ width: 46, height: 46, borderRadius: "50%", background: color, color: T.PAPER, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 4px 14px ${T.SHADOW}`, animation: glow ? "glow 1.8s infinite" : "none" }}><Icon size={20} /></span>
     </button>
   );
 }
@@ -362,40 +368,40 @@ function HomeScreen({ monthTotals, transactions, catById, onSeeAll, onOpenTx, T 
         </div>
       )}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 22, marginBottom: 6 }}>
-        <span style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 16, color: INK }}>Recent activity</span>
-        {transactions.length > 0 && <button onClick={() => onSeeAll("all")} style={{ background: "none", border: "none", color: GOLD, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>See all</button>}
+        <span style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 16, color: T.INK }}>Recent activity</span>
+        {transactions.length > 0 && <button onClick={() => onSeeAll("all")} style={{ background: "none", border: "none", color: T.GOLD, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>See all</button>}
       </div>
       {recent.length === 0 ? (
-        <EmptyState icon={ReceiptText} title="No transactions yet" sub="Tap the + button to add one, or let the AI read a receipt or passbook page for you." />
+        <EmptyState icon={ReceiptText} title="No transactions yet" sub="Tap the + button to add one, or let the AI read a receipt or passbook page for you." T={T} />
       ) : (
-        <div style={{ background: CARD, border: `1px solid ${LINE}`, borderRadius: 14, padding: "4px 12px" }}>{recent.map((t) => <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} onClick={() => onOpenTx(t)} />)}</div>
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: "4px 12px" }}>{recent.map((t) => <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} onClick={() => onOpenTx(t)} T={T} />)}</div>
       )}
     </div>
   );
 }
 
-function TransactionsScreen({ transactions, catById, filter, setFilter, onOpenTx }) {
+function TransactionsScreen({ transactions, catById, filter, setFilter, onOpenTx, T = THEMES.light }) {
   const filtered = useMemo(() => transactions.filter((t) => filter === "all" || t.type === filter), [transactions, filter]);
   const grouped = useMemo(() => groupByDate(filtered), [filtered]);
   const total = useMemo(() => filtered.reduce((s, t) => s + (t.type === "expense" ? -1 : 1) * Number(t.amount), 0), [filtered]);
   return (
     <div>
-      <div style={{ marginTop: 16 }}><SegmentedControl value={filter} onChange={setFilter} options={[{ value: "all", label: "All" }, { value: "expense", label: "Expenses" }, { value: "income", label: "Income" }]} /></div>
+      <div style={{ marginTop: 16 }}><SegmentedControl value={filter} onChange={setFilter} options={[{ value: "all", label: "All" }, { value: "expense", label: "Expenses" }, { value: "income", label: "Income" }]} T={T} /></div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "14px 2px 4px" }}>
-        <span style={{ fontSize: 12.5, color: INK_SOFT, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4 }}>{filtered.length} entries</span>
-        <span style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 15, color: total < 0 ? RED : GREEN }}>{fmtAmount(total)}</span>
+        <span style={{ fontSize: 12.5, color: T.INK_SOFT, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4 }}>{filtered.length} entries</span>
+        <span style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 15, color: total < 0 ? T.RED : T.GREEN }}>{fmtAmount(total)}</span>
       </div>
-      {grouped.length === 0 ? <EmptyState icon={ReceiptText} title="Nothing here yet" sub="Transactions you add will show up in this ledger, grouped by day." /> : grouped.map(([date, txs]) => (
+      {grouped.length === 0 ? <EmptyState icon={ReceiptText} title="Nothing here yet" sub="Transactions you add will show up in this ledger, grouped by day." T={T} /> : grouped.map(([date, txs]) => (
         <div key={date} style={{ marginTop: 14 }}>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: INK_SOFT, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, marginLeft: 2 }}>{fmtDateHeader(date)}</div>
-          <div style={{ background: CARD, border: `1px solid ${LINE}`, borderRadius: 14, padding: "4px 12px" }}>{txs.map((t) => <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} onClick={() => onOpenTx(t)} />)}</div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, marginLeft: 2 }}>{fmtDateHeader(date)}</div>
+          <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: "4px 12px" }}>{txs.map((t) => <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} onClick={() => onOpenTx(t)} T={T} />)}</div>
         </div>
       ))}
     </div>
   );
 }
 
-function ReportsScreen({ transactions, catById, month, setMonth }) {
+function ReportsScreen({ transactions, catById, month, setMonth, T = THEMES.light }) {
   const monthTx = useMemo(() => transactions.filter((t) => isSameMonth(t.date, month)), [transactions, month]);
   const mIncome = monthTx.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
   const mExpense = monthTx.filter((t) => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
@@ -418,37 +424,37 @@ function ReportsScreen({ transactions, catById, month, setMonth }) {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16 }}>
-        <button onClick={() => { const d = new Date(month); d.setMonth(d.getMonth() - 1); setMonth(d); }} style={navBtnStyle}><ChevronLeft size={18} color={INK} /></button>
-        <span style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 16, color: INK }}>{monthLabel(month)}</span>
-        <button onClick={() => { const d = new Date(month); d.setMonth(d.getMonth() + 1); setMonth(d); }} style={navBtnStyle}><ChevronRight size={18} color={INK} /></button>
+        <button onClick={() => { const d = new Date(month); d.setMonth(d.getMonth() - 1); setMonth(d); }} style={{ ...navBtnStyle, border: `1px solid ${T.LINE}`, background: T.CARD }}><ChevronLeft size={18} color={T.INK} /></button>
+        <span style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 16, color: T.INK }}>{monthLabel(month)}</span>
+        <button onClick={() => { const d = new Date(month); d.setMonth(d.getMonth() + 1); setMonth(d); }} style={{ ...navBtnStyle, border: `1px solid ${T.LINE}`, background: T.CARD }}><ChevronRight size={18} color={T.INK} /></button>
       </div>
       <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-        <StatChip label="Income" value={mIncome} color={GREEN} />
-        <StatChip label="Expense" value={mExpense} color={RED} />
-        <StatChip label="Net" value={mIncome - mExpense} color={mIncome - mExpense >= 0 ? GREEN : RED} />
+        <StatChip label="Income" value={mIncome} color={T.GREEN} T={T} />
+        <StatChip label="Expense" value={mExpense} color={T.RED} T={T} />
+        <StatChip label="Net" value={mIncome - mExpense} color={mIncome - mExpense >= 0 ? T.GREEN : T.RED} T={T} />
       </div>
-      <SectionTitle>Last 6 months</SectionTitle>
-      <div style={{ background: CARD, border: `1px solid ${LINE}`, borderRadius: 14, padding: "14px 8px 4px", height: 180 }}>
+      <SectionTitle T={T}>Last 6 months</SectionTitle>
+      <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: "14px 8px 4px", height: 180 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={barData} barGap={2}>
-            <CartesianGrid vertical={false} stroke={LINE} />
-            <XAxis dataKey="label" tick={{ fontSize: 11, fill: INK_SOFT, fontFamily: F_BODY }} axisLine={{ stroke: LINE }} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: INK_SOFT, fontFamily: F_BODY }} axisLine={false} tickLine={false} width={34} />
-            <Tooltip formatter={(v) => fmtAmount(v)} contentStyle={{ fontFamily: F_BODY, fontSize: 12, borderRadius: 8, border: `1px solid ${LINE}` }} />
-            <Bar dataKey="Income" fill={GREEN} radius={[3, 3, 0, 0]} />
-            <Bar dataKey="Expense" fill={RED} radius={[3, 3, 0, 0]} />
+            <CartesianGrid vertical={false} stroke={T.LINE} />
+            <XAxis dataKey="label" tick={{ fontSize: 11, fill: T.INK_SOFT, fontFamily: F_BODY }} axisLine={{ stroke: T.LINE }} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: T.INK_SOFT, fontFamily: F_BODY }} axisLine={false} tickLine={false} width={34} />
+            <Tooltip formatter={(v) => fmtAmount(v)} contentStyle={{ fontFamily: F_BODY, fontSize: 12, borderRadius: 8, border: `1px solid ${T.LINE}`, background: T.CARD, color: T.INK }} />
+            <Bar dataKey="Income" fill={T.GREEN} radius={[3, 3, 0, 0]} />
+            <Bar dataKey="Expense" fill={T.RED} radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <SectionTitle>By category</SectionTitle>
-      {pieData.length === 0 ? <EmptyState icon={PieChartIcon} title="No expenses this month" sub="Category breakdown will appear once you log an expense." /> : (
-        <div style={{ background: CARD, border: `1px solid ${LINE}`, borderRadius: 14, padding: "6px 14px" }}>
+      <SectionTitle T={T}>By category</SectionTitle>
+      {pieData.length === 0 ? <EmptyState icon={PieChartIcon} title="No expenses this month" sub="Category breakdown will appear once you log an expense." T={T} /> : (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: "6px 14px" }}>
           {pieData.map((e) => {
             const pct = mExpense > 0 ? Math.round((e.value / mExpense) * 100) : 0;
             return (
-              <div key={e.id} style={{ padding: "10px 0", borderBottom: `1px dashed ${LINE}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}><span style={{ color: INK, fontWeight: 600 }}>{e.name}</span><span style={{ fontFamily: F_MONO, color: INK }}>{fmtAmount(e.value)} · {pct}%</span></div>
-                <div style={{ height: 6, borderRadius: 4, background: PAPER_DIM, overflow: "hidden" }}><div style={{ width: pct + "%", height: "100%", background: e.color }} /></div>
+              <div key={e.id} style={{ padding: "10px 0", borderBottom: `1px dashed ${T.LINE}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}><span style={{ color: T.INK, fontWeight: 600 }}>{e.name}</span><span style={{ fontFamily: F_MONO, color: T.INK }}>{fmtAmount(e.value)} · {pct}%</span></div>
+                <div style={{ height: 6, borderRadius: 4, background: T.PAPER_DIM, overflow: "hidden" }}><div style={{ width: pct + "%", height: "100%", background: e.color }} /></div>
               </div>
             );
           })}
@@ -457,30 +463,30 @@ function ReportsScreen({ transactions, catById, month, setMonth }) {
     </div>
   );
 }
-const navBtnStyle = { width: 32, height: 32, borderRadius: "50%", border: `1px solid ${LINE}`, background: CARD, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
-function StatChip({ label, value, color }) {
+const navBtnStyle = { width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
+function StatChip({ label, value, color, T = THEMES.light }) {
   return (
-    <div style={{ flex: 1, background: CARD, border: `1px solid ${LINE}`, borderRadius: 12, padding: "10px 10px" }}>
-      <div style={{ fontSize: 10.5, fontWeight: 700, color: INK_SOFT, textTransform: "uppercase", letterSpacing: 0.3 }}>{label}</div>
+    <div style={{ flex: 1, background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 12, padding: "10px 10px" }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.3 }}>{label}</div>
       <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 14, color, marginTop: 3 }}>{fmtAmount(value)}</div>
     </div>
   );
 }
 
-function CategoriesScreen({ categories, transactions, onAdd, onEdit, onDelete }) {
+function CategoriesScreen({ categories, transactions, onAdd, onEdit, onDelete, T = THEMES.light }) {
   const usage = useMemo(() => { const m = {}; for (const t of transactions) m[t.categoryId] = (m[t.categoryId] || 0) + 1; return m; }, [transactions]);
   return (
     <div>
-      <div style={{ marginTop: 16, marginBottom: 10 }}><PrimaryButton onClick={onAdd}><Plus size={16} /> New category</PrimaryButton></div>
+      <div style={{ marginTop: 16, marginBottom: 10 }}><PrimaryButton onClick={onAdd} T={T}><Plus size={16} /> New category</PrimaryButton></div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {categories.map((c) => (
-          <div key={c.id} style={{ background: CARD, border: `1px solid ${LINE}`, borderRadius: 14, padding: 12 }}>
-            <IconStamp icon={c.icon} color={c.color} size={36} />
-            <div style={{ fontFamily: F_BODY, fontWeight: 700, fontSize: 13.5, color: INK, marginTop: 8 }}>{c.name}</div>
-            <div style={{ fontSize: 11, color: INK_SOFT, marginTop: 1, textTransform: "capitalize" }}>{c.type} · {usage[c.id] || 0} entries</div>
+          <div key={c.id} style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 14, padding: 12 }}>
+            <IconStamp icon={c.icon} color={c.color} size={36} T={T} />
+            <div style={{ fontFamily: F_BODY, fontWeight: 700, fontSize: 13.5, color: T.INK, marginTop: 8 }}>{c.name}</div>
+            <div style={{ fontSize: 11, color: T.INK_SOFT, marginTop: 1, textTransform: "capitalize" }}>{c.type} · {usage[c.id] || 0} entries</div>
             <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-              <button onClick={() => onEdit(c)} style={iconBtnStyle}><Pencil size={13} color={INK_SOFT} /></button>
-              {!c.locked && <button onClick={() => onDelete(c.id)} style={iconBtnStyle}><Trash2 size={13} color={RED} /></button>}
+              <button onClick={() => onEdit(c)} style={{ ...iconBtnStyle, borderColor: T.LINE, background: T.PAPER }}><Pencil size={13} color={T.INK_SOFT} /></button>
+              {!c.locked && <button onClick={() => onDelete(c.id)} style={{ ...iconBtnStyle, borderColor: T.RED + "40", background: T.PAPER }}><Trash2 size={13} color={T.RED} /></button>}
             </div>
           </div>
         ))}
@@ -488,7 +494,7 @@ function CategoriesScreen({ categories, transactions, onAdd, onEdit, onDelete })
     </div>
   );
 }
-const iconBtnStyle = { width: 26, height: 26, borderRadius: 7, border: `1px solid ${LINE}`, background: PAPER, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
+const iconBtnStyle = { width: 26, height: 26, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
 
 function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }) {
   const [type, setType] = useState(tx.type);
@@ -540,44 +546,49 @@ function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }
   );
 }
 
-function CategoryModal({ cat, onClose, onSave, onDelete }) {
+function CategoryModal({ cat, onClose, onSave, onDelete, T = THEMES.light }) {
   const [name, setName] = useState(cat.name);
   const [icon, setIcon] = useState(cat.icon);
   const [color, setColor] = useState(cat.color);
   const [type, setType] = useState(cat.type);
   const isNew = !cat.id;
   const canSave = name.trim().length > 0;
+  const inputStyleThemed = getInputStyle(T);
   return (
-    <Sheet title={isNew ? "New category" : "Edit category"} onClose={onClose}
+    <Sheet title={isNew ? "New category" : "Edit category"} onClose={onClose} T={T}
       footer={
         <div style={{ display: "flex", gap: 10 }}>
-          {!isNew && !cat.locked && <button onClick={() => onDelete(cat.id)} style={{ width: 46, height: 46, borderRadius: 12, border: `1.5px solid ${RED}55`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Trash2 size={18} color={RED} /></button>}
-          <div style={{ flex: 1 }}><PrimaryButton disabled={!canSave} onClick={() => onSave({ name: name.trim(), icon, color, type }, cat.id)}><Check size={16} /> Save category</PrimaryButton></div>
+          {!isNew && !cat.locked && <button onClick={() => onDelete(cat.id)} style={{ width: 46, height: 46, borderRadius: 12, border: `1.5px solid ${T.RED}55`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Trash2 size={18} color={T.RED} /></button>}
+          <div style={{ flex: 1 }}><PrimaryButton disabled={!canSave} onClick={() => onSave({ name: name.trim(), icon, color, type }, cat.id)} T={T}><Check size={16} /> Save category</PrimaryButton></div>
         </div>
       }>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}><IconStamp icon={icon} color={color} size={64} /></div>
-      <Field label="Name"><input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Groceries" style={inputStyle} /></Field>
-      <Field label="Applies to"><SegmentedControl value={type} onChange={setType} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }, { value: "both", label: "Both" }]} /></Field>
-      <Field label="Icon">
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}><IconStamp icon={icon} color={color} size={64} T={T} /></div>
+      <Field label="Name" T={T}><input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Groceries" style={inputStyleThemed} /></Field>
+      <Field label="Applies to" T={T}><SegmentedControl value={type} onChange={setType} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }, { value: "both", label: "Both" }]} T={T} /></Field>
+      <Field label="Icon" T={T}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8 }}>
           {ICON_KEYS.map((k) => { const Ic = ICONS[k]; return (
-            <button key={k} onClick={() => setIcon(k)} style={{ aspectRatio: "1", borderRadius: 10, border: `1.5px solid ${icon === k ? color : LINE}`, background: icon === k ? color + "1c" : CARD, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Ic size={17} color={icon === k ? color : INK_SOFT} /></button>
+            <button key={k} onClick={() => setIcon(k)} style={{ aspectRatio: "1", borderRadius: 10, border: `1.5px solid ${icon === k ? color : T.LINE}`, background: icon === k ? color + "1c" : T.CARD, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Ic size={17} color={icon === k ? color : T.INK_SOFT} /></button>
           ); })}
         </div>
       </Field>
-      <Field label="Color">
+      <Field label="Color" T={T}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {COLOR_PRESETS.map((c) => <button key={c} onClick={() => setColor(c)} style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: color === c ? `2.5px solid ${INK}` : "2.5px solid transparent", cursor: "pointer" }} />)}
+          {COLOR_PRESETS.map((c) => <button key={c} onClick={() => setColor(c)} style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: color === c ? `2.5px solid ${T.INK}` : "2.5px solid transparent", cursor: "pointer" }} />)}
         </div>
       </Field>
     </Sheet>
   );
 }
 
-function SettingsModal({ email, onClose, toggleTheme, currentTheme, T }) {
+function SettingsModal({ email, onClose, toggleTheme, currentTheme, T, apiKey, onApiKeyChange }) {
   return (
     <Sheet title="Settings" onClose={onClose} T={T}>
-      <Field label="Signed in as" T={T}><div style={{ ...inputStyle, color: T.INK_SOFT, background: T.CARD, borderColor: T.LINE }}>{email}</div></Field>
+      <Field label="Signed in as" T={T}><div style={{ ...getInputStyle(T), color: T.INK_SOFT, background: T.CARD, borderColor: T.LINE }}>{email}</div></Field>
+      <Field label="AI API key" T={T}>
+        <input type="password" value={apiKey} onChange={(e) => onApiKeyChange(e.target.value)} placeholder="Enter your Anthropic API key" style={{ ...getInputStyle(T), fontSize: 13 }} />
+        <div style={{ fontSize: 11.5, color: T.INK_SOFT, marginTop: 8, lineHeight: 1.5 }}>Stored on this device and used only for AI capture requests.</div>
+      </Field>
       <Field label="Theme" T={T}>
         <button onClick={toggleTheme}
           style={{ width: "100%", padding: "12px 16px", borderRadius: 14, border: `2px solid ${T.GOLD}40`, background: T.GOLD + "08", color: T.GOLD, fontFamily: F_BODY, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all .2s" }}>
@@ -593,7 +604,7 @@ function SettingsModal({ email, onClose, toggleTheme, currentTheme, T }) {
   );
 }
 
-function AIModal({ categories, onClose, onImport, onCreateCategory }) {
+function AIModal({ categories, onClose, onImport, onCreateCategory, apiKey, T = THEMES.light }) {
   const [mode, setMode] = useState("describe");
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
@@ -610,7 +621,11 @@ function AIModal({ categories, onClose, onImport, onCreateCategory }) {
     try {
       let imageBase64 = null, imageMediaType = null;
       if (mode === "photo" && file) { imageBase64 = await fileToBase64(file); imageMediaType = file.type || "image/jpeg"; }
-      const { rows } = await api("/api/ai/parse", { method: "POST", body: JSON.stringify({ text, imageBase64, imageMediaType }) });
+      const { rows } = await api("/api/ai/parse", {
+        method: "POST",
+        body: JSON.stringify({ text, imageBase64, imageMediaType }),
+        headers: apiKey ? { "x-user-ai-key": apiKey } : {},
+      });
       const withIds = rows.map((r) => ({ rid: Math.random().toString(36).slice(2), ...r, include: true }));
       if (withIds.length === 0) setError("Couldn't find any transactions in that. Try adding more detail, or a clearer photo.");
       setResults(withIds);
@@ -640,63 +655,63 @@ function AIModal({ categories, onClose, onImport, onCreateCategory }) {
   const includedCount = results ? results.filter((r) => r.include).length : 0;
 
   return (
-    <Sheet title="AI capture" onClose={onClose}
+    <Sheet title="AI capture" onClose={onClose} T={T}
       footer={results ? (
-        <PrimaryButton disabled={includedCount === 0} color={GOLD} onClick={confirmImport}><Check size={16} /> Add {includedCount} transaction{includedCount === 1 ? "" : "s"}</PrimaryButton>
+        <PrimaryButton disabled={includedCount === 0} color={T.GOLD} onClick={confirmImport} T={T}><Check size={16} /> Add {includedCount} transaction{includedCount === 1 ? "" : "s"}</PrimaryButton>
       ) : (
-        <PrimaryButton disabled={loading || (mode === "describe" ? !text.trim() : !file)} color={GOLD} onClick={runParse}>{loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} {loading ? "Reading…" : "Parse with AI"}</PrimaryButton>
+        <PrimaryButton disabled={loading || (mode === "describe" ? !text.trim() : !file)} color={T.GOLD} onClick={runParse} T={T}>{loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} {loading ? "Reading…" : "Parse with AI"}</PrimaryButton>
       )}>
       {!results && (
         <>
-          <SegmentedControl value={mode} onChange={(m) => { setMode(m); setError(null); }} accent={GOLD} options={[{ value: "describe", label: "Describe it" }, { value: "photo", label: "Photo" }]} />
+          <SegmentedControl value={mode} onChange={(m) => { setMode(m); setError(null); }} accent={T.GOLD} options={[{ value: "describe", label: "Describe it" }, { value: "photo", label: "Photo" }]} T={T} />
           {mode === "describe" ? (
             <div style={{ marginTop: 16 }}>
-              <Field label="What happened?"><textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder="e.g. Spent ₹450 on groceries at Big Bazaar today, and got ₹250 cab to office" style={{ ...inputStyle, resize: "none", lineHeight: 1.5 }} /></Field>
-              <p style={{ fontSize: 12, color: INK_SOFT, lineHeight: 1.5 }}>Mention what it was for, the amount, and roughly when — the AI will sort it into your categories.</p>
+              <Field label="What happened?" T={T}><textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder="e.g. Spent ₹450 on groceries at Big Bazaar today, and got ₹250 cab to office" style={{ ...getInputStyle(T), resize: "none", lineHeight: 1.5 }} /></Field>
+              <p style={{ fontSize: 12, color: T.INK_SOFT, lineHeight: 1.5 }}>Mention what it was for, the amount, and roughly when — the AI will sort it into your categories.</p>
             </div>
           ) : (
             <div style={{ marginTop: 16 }}>
-              <Field label="Receipt, statement or passbook photo">
+              <Field label="Receipt, statement or passbook photo" T={T}>
                 {preview ? (
                   <div style={{ position: "relative" }}>
-                    <img src={preview} alt="preview" style={{ width: "100%", borderRadius: 12, border: `1px solid ${LINE}`, maxHeight: 260, objectFit: "cover" }} />
-                    <button onClick={() => { setFile(null); setPreview(null); }} style={{ position: "absolute", top: 8, right: 8, background: "rgba(28,37,54,0.75)", border: "none", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={14} color={PAPER} /></button>
+                    <img src={preview} alt="preview" style={{ width: "100%", borderRadius: 12, border: `1px solid ${T.LINE}`, maxHeight: 260, objectFit: "cover" }} />
+                    <button onClick={() => { setFile(null); setPreview(null); }} style={{ position: "absolute", top: 8, right: 8, background: T.INK + "c0", border: "none", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={14} color={T.PAPER} /></button>
                   </div>
                 ) : (
-                  <button onClick={() => fileRef.current?.click()} style={{ width: "100%", padding: "30px 12px", borderRadius: 12, border: `1.5px dashed ${LINE}`, background: PAPER_DIM, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                    <div style={{ display: "flex", gap: 10 }}><Camera size={22} color={INK_SOFT} /><FileText size={22} color={INK_SOFT} /></div>
-                    <span style={{ fontSize: 12.5, color: INK_SOFT, fontWeight: 600 }}>Tap to take a photo or choose one</span>
+                  <button onClick={() => fileRef.current?.click()} style={{ width: "100%", padding: "30px 12px", borderRadius: 12, border: `1.5px dashed ${T.LINE}`, background: T.PAPER_DIM, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 10 }}><Camera size={22} color={T.INK_SOFT} /><FileText size={22} color={T.INK_SOFT} /></div>
+                    <span style={{ fontSize: 12.5, color: T.INK_SOFT, fontWeight: 600 }}>Tap to take a photo or choose one</span>
                   </button>
                 )}
                 <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={(e) => handleFile(e.target.files?.[0])} style={{ display: "none" }} />
               </Field>
-              <p style={{ fontSize: 12, color: INK_SOFT, lineHeight: 1.5 }}>Works with receipts, bank statement screenshots, or passbook pages — including several transactions at once.</p>
+              <p style={{ fontSize: 12, color: T.INK_SOFT, lineHeight: 1.5 }}>Works with receipts, bank statement screenshots, or passbook pages — including several transactions at once.</p>
             </div>
           )}
-          {error && <div style={{ marginTop: 14, display: "flex", gap: 8, alignItems: "flex-start", background: RED + "12", border: `1px solid ${RED}33`, borderRadius: 10, padding: "10px 12px" }}><AlertCircle size={16} color={RED} style={{ flexShrink: 0, marginTop: 1 }} /><span style={{ fontSize: 12.5, color: RED }}>{error}</span></div>}
+          {error && <div style={{ marginTop: 14, display: "flex", gap: 8, alignItems: "flex-start", background: T.RED + "12", border: `1px solid ${T.RED}33`, borderRadius: 10, padding: "10px 12px" }}><AlertCircle size={16} color={T.RED} style={{ flexShrink: 0, marginTop: 1 }} /><span style={{ fontSize: 12.5, color: T.RED }}>{error}</span></div>}
         </>
       )}
       {results && (
         <div>
-          <p style={{ fontSize: 12.5, color: INK_SOFT, marginBottom: 12 }}>Review before adding — tap a field to fix anything the AI got wrong.</p>
+          <p style={{ fontSize: 12.5, color: T.INK_SOFT, marginBottom: 12 }}>Review before adding — tap a field to fix anything the AI got wrong.</p>
           {results.map((r) => {
             const availableCats = categories.filter((c) => c.type === r.type || c.type === "both");
             return (
-              <div key={r.rid} style={{ background: r.include ? CARD : PAPER_DIM, border: `1px solid ${LINE}`, borderRadius: 12, padding: 12, marginBottom: 10, opacity: r.include ? 1 : 0.55 }}>
+              <div key={r.rid} style={{ background: r.include ? T.CARD : T.PAPER_DIM, border: `1px solid ${T.LINE}`, borderRadius: 12, padding: 12, marginBottom: 10, opacity: r.include ? 1 : 0.55 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                   <input type="checkbox" checked={r.include} onChange={(e) => updateRow(r.rid, { include: e.target.checked })} style={{ width: 16, height: 16 }} />
-                  <SegmentedControl value={r.type} onChange={(v) => updateRow(r.rid, { type: v, categoryId: null })} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }]} />
-                  <button onClick={() => removeRow(r.rid)} style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}><X size={16} color={INK_SOFT} /></button>
+                  <SegmentedControl value={r.type} onChange={(v) => updateRow(r.rid, { type: v, categoryId: null })} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }]} T={T} />
+                  <button onClick={() => removeRow(r.rid)} style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}><X size={16} color={T.INK_SOFT} /></button>
                 </div>
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                   <div style={{ position: "relative", flex: "0 0 40%" }}>
-                    <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, fontSize: 13, color: INK_SOFT }}>₹</span>
-                    <input type="number" value={r.amount} onChange={(e) => updateRow(r.rid, { amount: Number(e.target.value) })} style={{ ...inputStyle, padding: "8px 8px 8px 22px", fontFamily: F_MONO, fontSize: 13 }} />
+                    <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, fontSize: 13, color: T.INK_SOFT }}>₹</span>
+                    <input type="number" value={r.amount} onChange={(e) => updateRow(r.rid, { amount: Number(e.target.value) })} style={{ ...getInputStyle(T), padding: "8px 8px 8px 22px", fontFamily: F_MONO, fontSize: 13 }} />
                   </div>
-                  <input type="date" value={r.date} onChange={(e) => updateRow(r.rid, { date: e.target.value })} style={{ ...inputStyle, padding: "8px 8px", fontSize: 12.5, flex: 1 }} />
+                  <input type="date" value={r.date} onChange={(e) => updateRow(r.rid, { date: e.target.value })} style={{ ...getInputStyle(T), padding: "8px 8px", fontSize: 12.5, flex: 1 }} />
                 </div>
-                <input value={r.note} onChange={(e) => updateRow(r.rid, { note: e.target.value })} placeholder="Note" style={{ ...inputStyle, padding: "8px 10px", fontSize: 13, marginBottom: 8 }} />
-                <select value={r.categoryId || "__new__"} onChange={(e) => updateRow(r.rid, { categoryId: e.target.value === "__new__" ? null : e.target.value })} style={{ ...inputStyle, padding: "8px 10px", fontSize: 13 }}>
+                <input value={r.note} onChange={(e) => updateRow(r.rid, { note: e.target.value })} placeholder="Note" style={{ ...getInputStyle(T), padding: "8px 10px", fontSize: 13, marginBottom: 8 }} />
+                <select value={r.categoryId || "__new__"} onChange={(e) => updateRow(r.rid, { categoryId: e.target.value === "__new__" ? null : e.target.value })} style={{ ...getInputStyle(T), padding: "8px 10px", fontSize: 13 }}>
                   {!r.categoryId && <option value="__new__">✦ New: {r.newCategoryName}</option>}
                   {availableCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
