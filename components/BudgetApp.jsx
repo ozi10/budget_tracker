@@ -12,9 +12,18 @@ import {
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 /* ---------------------------------- THEME ---------------------------------- */
-const INK = "#1C2536", INK_SOFT = "#4A5268", PAPER = "#F6F1E4", PAPER_DIM = "#EFE7D3";
-const CARD = "#FCFAF3", LINE = "#DCD0AE", RED = "#B33A3A", GREEN = "#3A6B52";
-const GOLD = "#B8860B", GOLD_SOFT = "#E4C77B";
+const THEMES = {
+  light: {
+    INK: "#1C2536", INK_SOFT: "#4A5268", PAPER: "#F6F1E4", PAPER_DIM: "#EFE7D3",
+    CARD: "#FFFFFF", LINE: "#E0D9C7", RED: "#B33A3A", GREEN: "#3A6B52",
+    GOLD: "#B8860B", GOLD_SOFT: "#E4C77B", SHADOW: "rgba(28,37,54,0.08)"
+  },
+  dark: {
+    INK: "#F6F1E4", INK_SOFT: "#C9C2B8", PAPER: "#0F1419", PAPER_DIM: "#1A2029",
+    CARD: "#161C23", LINE: "#2A3139", RED: "#E08A8A", GREEN: "#6BB88A",
+    GOLD: "#E4C77B", GOLD_SOFT: "#B8860B", SHADOW: "rgba(0,0,0,0.3)"
+  }
+};
 const F_DISPLAY = "'Fraunces', Georgia, serif", F_BODY = "'Inter', -apple-system, sans-serif", F_MONO = "'IBM Plex Mono', ui-monospace, monospace";
 
 const ICONS = {
@@ -70,88 +79,98 @@ async function api(path, opts) {
 }
 
 /* ------------------------------ SMALL UI -------------------------------- */
-function IconStamp({ icon, color, size = 40 }) {
+function IconStamp({ icon, color, size = 40, T = THEMES.light }) {
   const Ic = ICONS[icon] || Wallet;
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: color + "22", border: `1.5px solid ${color}55`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Ic size={size * 0.5} color={color} strokeWidth={2} />
+    <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: color + "20", border: `2px solid ${color}40`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Ic size={size * 0.5} color={color} strokeWidth={2.2} />
     </div>
   );
 }
-function SegmentedControl({ options, value, onChange, accent }) {
+function SegmentedControl({ options, value, onChange, accent, T = THEMES.light }) {
   return (
-    <div style={{ display: "flex", background: PAPER_DIM, borderRadius: 12, padding: 3, border: `1px solid ${LINE}` }}>
+    <div style={{ display: "flex", background: T.PAPER_DIM, borderRadius: 14, padding: 4, border: `1.5px solid ${T.LINE}` }}>
       {options.map((opt) => (
         <button key={opt.value} onClick={() => onChange(opt.value)}
-          style={{ flex: 1, padding: "8px 10px", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: F_BODY, fontWeight: 600, fontSize: 13.5, background: value === opt.value ? CARD : "transparent", color: value === opt.value ? (accent || INK) : INK_SOFT, boxShadow: value === opt.value ? "0 1px 3px rgba(28,37,54,0.15)" : "none", transition: "all .15s" }}>
+          style={{ flex: 1, padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: F_BODY, fontWeight: 600, fontSize: 13, background: value === opt.value ? T.CARD : "transparent", color: value === opt.value ? (accent || T.INK) : T.INK_SOFT, boxShadow: value === opt.value ? `0 2px 6px ${T.SHADOW}` : "none", transition: "all .2s" }}>
           {opt.label}
         </button>
       ))}
     </div>
   );
 }
-function Sheet({ title, onClose, children, footer }) {
+function Sheet({ title, onClose, children, footer, T = THEMES.light }) {
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(28,37,54,0.45)", animation: "fadeIn .18s ease" }} />
-      <div style={{ position: "relative", background: PAPER, borderRadius: "20px 20px 0 0", maxHeight: "88%", display: "flex", flexDirection: "column", animation: "slideUp .22s cubic-bezier(.2,.8,.3,1)", boxShadow: "0 -8px 30px rgba(0,0,0,0.25)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px 12px", borderBottom: `1px solid ${LINE}` }}>
-          <span style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 19, color: INK }}>{title}</span>
-          <button onClick={onClose} style={{ background: PAPER_DIM, border: "none", borderRadius: "50%", width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={16} color={INK_SOFT} /></button>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(28,37,54,0.5)", animation: "fadeIn .18s ease" }} />
+      <div style={{ position: "relative", background: T.PAPER, borderRadius: "28px 28px 0 0", maxHeight: "88%", display: "flex", flexDirection: "column", animation: "slideUp .22s cubic-bezier(.2,.8,.3,1)", boxShadow: `0 -12px 40px ${T.SHADOW}` }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 20px 14px", borderBottom: `1.5px solid ${T.LINE}` }}>
+          <span style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 20, color: T.INK }}>{title}</span>
+          <button onClick={onClose} style={{ background: T.LINE + "40", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><X size={18} color={T.INK_SOFT} /></button>
         </div>
-        <div style={{ overflowY: "auto", padding: 18, flex: 1 }}>{children}</div>
-        {footer && <div style={{ padding: 14, borderTop: `1px solid ${LINE}`, background: CARD }}>{footer}</div>}
+        <div style={{ overflowY: "auto", padding: 20, flex: 1 }}>{children}</div>
+        {footer && <div style={{ padding: 16, borderTop: `1.5px solid ${T.LINE}`, background: T.CARD }}>{footer}</div>}
       </div>
     </div>
   );
 }
-function PrimaryButton({ children, onClick, disabled, color = INK, style }) {
+function PrimaryButton({ children, onClick, disabled, color, style, T = THEMES.light }) {
+  const defaultColor = color || T.INK;
   return (
     <button onClick={onClick} disabled={disabled}
-      style={{ width: "100%", padding: "13px 16px", borderRadius: 12, border: "none", background: disabled ? "#B8B2A0" : color, color: PAPER, fontFamily: F_BODY, fontWeight: 700, fontSize: 15, cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, letterSpacing: 0.2, ...style }}>
+      style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "none", background: disabled ? T.LINE : defaultColor, color: T.PAPER, fontFamily: F_BODY, fontWeight: 700, fontSize: 15, cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, letterSpacing: 0.3, transition: "all .2s", boxShadow: disabled ? "none" : `0 4px 12px ${defaultColor}40`, ...style }}>
       {children}
     </button>
   );
 }
-function Field({ label, children }) {
+function Field({ label, children, T = THEMES.light }) {
   return (
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ fontFamily: F_BODY, fontSize: 12, fontWeight: 600, color: INK_SOFT, marginBottom: 7, textTransform: "uppercase", letterSpacing: 0.6 }}>{label}</div>
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ fontFamily: F_BODY, fontSize: 11, fontWeight: 700, color: T.INK_SOFT, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.7 }}>{label}</div>
       {children}
     </div>
   );
 }
-const inputStyle = { width: "100%", padding: "11px 13px", borderRadius: 10, border: `1.5px solid ${LINE}`, background: CARD, fontFamily: F_BODY, fontSize: 15, color: INK, outline: "none", boxSizing: "border-box" };
+const getInputStyle = (T) => ({ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${T.LINE}`, background: T.CARD, fontFamily: F_BODY, fontSize: 15, color: T.INK, outline: "none", boxSizing: "border-box", transition: "all .2s" });
+const inputStyle = getInputStyle(THEMES.light);
 
-function TransactionRow({ t, category, onClick }) {
+function TransactionRow({ t, category, onClick, T = THEMES.light }) {
   const isExpense = t.type === "expense";
   return (
-    <button onClick={onClick} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "11px 4px", background: "transparent", border: "none", borderBottom: `1px dashed ${LINE}`, cursor: "pointer", textAlign: "left" }}>
-      <IconStamp icon={category?.icon || "wallet"} color={category?.color || "#6B6252"} />
+    <button onClick={onClick} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "13px 4px", background: "transparent", border: "none", borderBottom: `1.5px solid ${T.LINE}40`, cursor: "pointer", textAlign: "left", transition: "all .2s" }}>
+      <IconStamp icon={category?.icon || "wallet"} color={category?.color || "#6B6252"} T={T} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: F_BODY, fontWeight: 600, fontSize: 14.5, color: INK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.note || category?.name || "Transaction"}</div>
-        <div style={{ fontFamily: F_BODY, fontSize: 12, color: INK_SOFT, marginTop: 1 }}>{category?.name || "Other"}</div>
+        <div style={{ fontFamily: F_BODY, fontWeight: 600, fontSize: 14.5, color: T.INK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.note || category?.name || "Transaction"}</div>
+        <div style={{ fontFamily: F_BODY, fontSize: 12, color: T.INK_SOFT, marginTop: 2 }}>{category?.name || "Other"}</div>
       </div>
-      <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 14.5, color: isExpense ? RED : GREEN, flexShrink: 0 }}>{isExpense ? "−" : "+"}{fmtAmount(t.amount)}</div>
+      <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 14.5, color: isExpense ? T.RED : T.GREEN, flexShrink: 0 }}>{isExpense ? "−" : "+"}{fmtAmount(t.amount)}</div>
     </button>
   );
 }
-function EmptyState({ icon: Icon, title, sub }) {
+function EmptyState({ icon: Icon, title, sub, T = THEMES.light }) {
   return (
-    <div style={{ textAlign: "center", padding: "40px 20px", color: INK_SOFT }}>
-      <div style={{ width: 56, height: 56, borderRadius: "50%", background: PAPER_DIM, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}><Icon size={26} color={INK_SOFT} /></div>
-      <div style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 16, color: INK, marginBottom: 4 }}>{title}</div>
-      <div style={{ fontFamily: F_BODY, fontSize: 13, maxWidth: 240, margin: "0 auto", lineHeight: 1.5 }}>{sub}</div>
+    <div style={{ textAlign: "center", padding: "40px 20px", color: T.INK_SOFT }}>
+      <div style={{ width: 60, height: 60, borderRadius: "50%", background: T.PAPER_DIM, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Icon size={28} color={T.INK_SOFT} /></div>
+      <div style={{ fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 17, color: T.INK, marginBottom: 6 }}>{title}</div>
+      <div style={{ fontFamily: F_BODY, fontSize: 13, maxWidth: 240, margin: "0 auto", lineHeight: 1.6, color: T.INK_SOFT }}>{sub}</div>
     </div>
   );
 }
-function SectionTitle({ children }) {
-  return <div style={{ marginTop: 22, marginBottom: 8, fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 16, color: INK }}>{children}</div>;
+function SectionTitle({ children, T = THEMES.light }) {
+  return <div style={{ marginTop: 26, marginBottom: 10, fontFamily: F_DISPLAY, fontWeight: 700, fontSize: 18, color: T.INK }}>{children}</div>;
 }
 
 /* ============================== MAIN APP ================================ */
 export default function BudgetApp() {
   const { data: session } = useSession();
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('budget-theme');
+      return saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    }
+    return 'light';
+  });
+  const T = THEMES[theme];
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -163,6 +182,12 @@ export default function BudgetApp() {
   const [showSettings, setShowSettings] = useState(false);
   const [editingCat, setEditingCat] = useState(null);
   const [reportMonth, setReportMonth] = useState(() => { const d = new Date(); d.setDate(1); return d; });
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('budget-theme', newTheme);
+  };
 
   useEffect(() => {
     (async () => {
@@ -208,77 +233,77 @@ export default function BudgetApp() {
   function openAddTx() { setEditingTx({ type: "expense", amount: "", categoryId: categories.find((c) => c.type !== "income")?.id || categories[0]?.id, note: "", date: todayISO() }); setFabOpen(false); }
 
   if (loading) {
-    return <div style={{ height: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: PAPER, color: INK_SOFT, fontFamily: F_BODY }}>Loading your ledger…</div>;
+    return <div style={{ height: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: T.PAPER, color: T.INK_SOFT, fontFamily: F_BODY }}>Loading your ledger…</div>;
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", maxWidth: 430, margin: "0 auto", background: PAPER, fontFamily: F_BODY, overflow: "hidden" }}>
+    <div style={{ display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", maxWidth: 430, margin: "0 auto", background: T.PAPER, fontFamily: F_BODY, overflow: "hidden", color: T.INK }}>
       <style>{`
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes glow { 0%,100% { box-shadow: 0 0 0 0 rgba(184,134,11,0.35); } 50% { box-shadow: 0 0 0 8px rgba(184,134,11,0); } }
-        input:focus, textarea:focus, select:focus { border-color: ${GOLD} !important; }
+        input:focus, textarea:focus, select:focus { border-color: ${T.GOLD} !important; }
       `}</style>
 
-      <Header totals={totals} onSettings={() => setShowSettings(true)} />
+      <Header totals={totals} onSettings={() => setShowSettings(true)} T={T} />
 
       <div style={{ overflowY: "auto", overflowX: "hidden", padding: "0 16px 20px", minHeight: 0 }}>
-        {screen === "home" && <HomeScreen monthTotals={monthTotals} transactions={transactions} catById={catById} onSeeAll={(f) => { setTxFilter(f || "all"); setScreen("transactions"); }} onOpenTx={(t) => setEditingTx(t)} />}
-        {screen === "transactions" && <TransactionsScreen transactions={transactions} catById={catById} filter={txFilter} setFilter={setTxFilter} onOpenTx={(t) => setEditingTx(t)} />}
-        {screen === "reports" && <ReportsScreen transactions={transactions} catById={catById} month={reportMonth} setMonth={setReportMonth} />}
-        {screen === "categories" && <CategoriesScreen categories={categories} transactions={transactions} onAdd={() => setEditingCat({ name: "", icon: "wallet", color: COLOR_PRESETS[0], type: "expense" })} onEdit={(c) => setEditingCat(c)} onDelete={removeCategory} />}
+        {screen === "home" && <HomeScreen monthTotals={monthTotals} transactions={transactions} catById={catById} onSeeAll={(f) => { setTxFilter(f || "all"); setScreen("transactions"); }} onOpenTx={(t) => setEditingTx(t)} T={T} />}
+        {screen === "transactions" && <TransactionsScreen transactions={transactions} catById={catById} filter={txFilter} setFilter={setTxFilter} onOpenTx={(t) => setEditingTx(t)} T={T} />}
+        {screen === "reports" && <ReportsScreen transactions={transactions} catById={catById} month={reportMonth} setMonth={setReportMonth} T={T} />}
+        {screen === "categories" && <CategoriesScreen categories={categories} transactions={transactions} onAdd={() => setEditingCat({ name: "", icon: "wallet", color: COLOR_PRESETS[0], type: "expense" })} onEdit={(c) => setEditingCat(c)} onDelete={removeCategory} T={T} />}
       </div>
 
       <div style={{ position: "fixed", right: 16, bottom: "calc(82px + env(safe-area-inset-bottom))", zIndex: 40, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10, maxWidth: 398 }}>
         {fabOpen && (
           <>
-            <FabAction label="AI capture" icon={Sparkles} color={GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow />
-            <FabAction label="Add manually" icon={Plus} color={INK} onClick={openAddTx} />
+            <FabAction label="AI capture" icon={Sparkles} color={T.GOLD} onClick={() => { setShowAI(true); setFabOpen(false); }} glow />
+            <FabAction label="Add manually" icon={Plus} color={T.INK} onClick={openAddTx} T={T} />
           </>
         )}
-        <button onClick={() => setFabOpen((v) => !v)} style={{ width: 56, height: 56, borderRadius: "50%", border: "none", background: INK, color: PAPER, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 18px rgba(28,37,54,0.4)", transform: fabOpen ? "rotate(45deg)" : "rotate(0)", transition: "transform .2s" }}><Plus size={26} /></button>
+        <button onClick={() => setFabOpen((v) => !v)} style={{ width: 56, height: 56, borderRadius: "50%", border: "none", background: T.INK, color: T.PAPER, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: `0 6px 18px ${T.SHADOW}`, transform: fabOpen ? "rotate(45deg)" : "rotate(0)", transition: "transform .2s" }}><Plus size={26} /></button>
       </div>
       {fabOpen && <div onClick={() => setFabOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 35 }} />}
 
-      <TabBar screen={screen} setScreen={setScreen} />
+      <TabBar screen={screen} setScreen={setScreen} T={T} />
 
-      {editingTx && <TxModal tx={editingTx} categories={categories} onClose={() => setEditingTx(null)} onSave={async (fields, id) => { await saveTransaction(fields, id); setEditingTx(null); }} onDelete={async (id) => { await removeTransaction(id); setEditingTx(null); }} />}
-      {showAI && <AIModal categories={categories} onClose={() => setShowAI(false)} onCreateCategory={saveCategory} onImport={async (txs) => { for (const t of txs) await saveTransaction(t); setShowAI(false); }} />}
-      {editingCat && <CategoryModal cat={editingCat} onClose={() => setEditingCat(null)} onSave={async (fields, id) => { await saveCategory(fields, id); setEditingCat(null); }} onDelete={async (id) => { await removeCategory(id); setEditingCat(null); }} />}
-      {showSettings && <SettingsModal email={session?.user?.email} onClose={() => setShowSettings(false)} />}
+      {editingTx && <TxModal tx={editingTx} categories={categories} onClose={() => setEditingTx(null)} onSave={async (fields, id) => { await saveTransaction(fields, id); setEditingTx(null); }} onDelete={async (id) => { await removeTransaction(id); setEditingTx(null); }} T={T} />}
+      {showAI && <AIModal categories={categories} onClose={() => setShowAI(false)} onCreateCategory={saveCategory} onImport={async (txs) => { for (const t of txs) await saveTransaction(t); setShowAI(false); }} T={T} />}
+      {editingCat && <CategoryModal cat={editingCat} onClose={() => setEditingCat(null)} onSave={async (fields, id) => { await saveCategory(fields, id); setEditingCat(null); }} onDelete={async (id) => { await removeCategory(id); setEditingCat(null); }} T={T} />}
+      {showSettings && <SettingsModal email={session?.user?.email} onClose={() => setShowSettings(false)} toggleTheme={toggleTheme} currentTheme={theme} T={T} />}
     </div>
   );
 }
 
-function Header({ totals, onSettings }) {
+function Header({ totals, onSettings, T }) {
   const dateStr = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
   return (
-    <div style={{ padding: "calc(18px + env(safe-area-inset-top)) 18px 14px", flexShrink: 0, background: INK, color: PAPER, borderRadius: "0 0 18px 18px" }}>
+    <div style={{ padding: "calc(18px + env(safe-area-inset-top)) 18px 14px", flexShrink: 0, background: T.INK, color: T.PAPER, borderRadius: "0 0 24px 24px", boxShadow: `0 4px 12px ${T.SHADOW}` }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div style={{ fontSize: 11.5, opacity: 0.65, letterSpacing: 0.5, textTransform: "uppercase" }}>{dateStr}</div>
           <div style={{ fontFamily: F_DISPLAY, fontWeight: 600, fontSize: 15.5, marginTop: 2 }}>Ledger</div>
         </div>
-        <button onClick={onSettings} style={{ width: 34, height: 34, borderRadius: "50%", background: GOLD_SOFT + "22", border: `1px solid ${GOLD_SOFT}55`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><SettingsIcon size={16} color={GOLD_SOFT} /></button>
+        <button onClick={onSettings} style={{ width: 40, height: 40, borderRadius: "50%", background: T.GOLD_SOFT + "1a", border: `2px solid ${T.GOLD_SOFT}40`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><SettingsIcon size={18} color={T.GOLD_SOFT} /></button>
       </div>
-      <div style={{ marginTop: 14 }}>
-        <div style={{ fontSize: 11.5, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.6 }}>Total balance</div>
-        <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 32, marginTop: 2, color: totals.balance < 0 ? "#E08A8A" : PAPER }}>{fmtAmount(totals.balance)}</div>
+      <div style={{ marginTop: 18 }}>
+        <div style={{ fontSize: 11, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.6 }}>Total balance</div>
+        <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 32, marginTop: 4, color: totals.balance < 0 ? "#E08A8A" : T.PAPER }}>{fmtAmount(totals.balance)}</div>
       </div>
     </div>
   );
 }
-function TabBar({ screen, setScreen }) {
+function TabBar({ screen, setScreen, T }) {
   const tabs = [{ key: "home", label: "Home", icon: HomeIcon }, { key: "transactions", label: "Ledger", icon: ListIcon }, { key: "reports", label: "Reports", icon: PieChartIcon }, { key: "categories", label: "Categories", icon: Tags }];
   return (
-    <div style={{ display: "flex", borderTop: `1px solid ${LINE}`, background: CARD, padding: "8px 6px calc(8px + env(safe-area-inset-bottom))" }}>
+    <div style={{ display: "flex", borderTop: `1.5px solid ${T.LINE}`, background: T.CARD, padding: "10px 8px calc(10px + env(safe-area-inset-bottom))", boxShadow: `0 -4px 12px ${T.SHADOW}` }}>
       {tabs.map((t) => {
         const active = screen === t.key, Ic = t.icon;
         return (
-          <button key={t.key} onClick={() => setScreen(t.key)} style={{ flex: 1, background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "4px 0", cursor: "pointer" }}>
-            <Ic size={20} color={active ? INK : "#9A927A"} strokeWidth={active ? 2.4 : 2} />
-            <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 500, color: active ? INK : "#9A927A" }}>{t.label}</span>
+          <button key={t.key} onClick={() => setScreen(t.key)} style={{ flex: 1, background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 0", cursor: "pointer", transition: "all .2s", opacity: active ? 1 : 0.6 }}>
+            <Ic size={22} color={active ? T.INK : T.INK_SOFT} strokeWidth={active ? 2.4 : 2} />
+            <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, color: active ? T.INK : T.INK_SOFT }}>{t.label}</span>
           </button>
         );
       })}
@@ -294,7 +319,7 @@ function FabAction({ label, icon: Icon, color, onClick, glow }) {
   );
 }
 
-function HomeScreen({ monthTotals, transactions, catById, onSeeAll, onOpenTx }) {
+function HomeScreen({ monthTotals, transactions, catById, onSeeAll, onOpenTx, T = THEMES.light }) {
   const recent = transactions.slice(0, 5);
   const thisMonth = new Date();
   const pieData = useMemo(() => {
@@ -305,32 +330,32 @@ function HomeScreen({ monthTotals, transactions, catById, onSeeAll, onOpenTx }) 
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-        <button onClick={() => onSeeAll("income")} style={{ flex: 1, textAlign: "left", background: CARD, border: `1px solid ${LINE}`, borderRadius: 14, padding: "13px 14px", cursor: "pointer" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: GREEN }}><ArrowUpRight size={15} /><span style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4 }}>Income</span></div>
-          <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 18, color: INK, marginTop: 5 }}>{fmtAmount(monthTotals.income)}</div>
+      <div style={{ display: "flex", gap: 12, marginTop: 18 }}>
+        <button onClick={() => onSeeAll("income")} style={{ flex: 1, textAlign: "left", background: T.CARD, border: `1.5px solid ${T.LINE}`, borderRadius: 18, padding: "16px 16px", cursor: "pointer", transition: "all .2s", boxShadow: `0 2px 8px ${T.SHADOW}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.GREEN }}><ArrowUpRight size={16} /><span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Income</span></div>
+          <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 20, color: T.INK, marginTop: 8 }}>{fmtAmount(monthTotals.income)}</div>
         </button>
-        <button onClick={() => onSeeAll("expense")} style={{ flex: 1, textAlign: "left", background: CARD, border: `1px solid ${LINE}`, borderRadius: 14, padding: "13px 14px", cursor: "pointer" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: RED }}><ArrowDownRight size={15} /><span style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4 }}>Expenses</span></div>
-          <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 18, color: INK, marginTop: 5 }}>{fmtAmount(monthTotals.expense)}</div>
+        <button onClick={() => onSeeAll("expense")} style={{ flex: 1, textAlign: "left", background: T.CARD, border: `1.5px solid ${T.LINE}`, borderRadius: 18, padding: "16px 16px", cursor: "pointer", transition: "all .2s", boxShadow: `0 2px 8px ${T.SHADOW}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.RED }}><ArrowDownRight size={16} /><span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Expenses</span></div>
+          <div style={{ fontFamily: F_MONO, fontWeight: 600, fontSize: 20, color: T.INK, marginTop: 8 }}>{fmtAmount(monthTotals.expense)}</div>
         </button>
       </div>
-      <SectionTitle>This month's spending</SectionTitle>
+      <SectionTitle T={T}>This month's spending</SectionTitle>
       {pieData.length === 0 ? (
-        <div style={{ background: CARD, border: `1px solid ${LINE}`, borderRadius: 14, padding: "20px 10px" }}><EmptyState icon={PieChartIcon} title="No spending yet" sub="Add an expense to see your category breakdown here." /></div>
+        <div style={{ background: T.CARD, border: `1.5px solid ${T.LINE}`, borderRadius: 18, padding: "20px 10px", boxShadow: `0 2px 8px ${T.SHADOW}` }}><EmptyState icon={PieChartIcon} title="No spending yet" sub="Add an expense to see your category breakdown here." T={T} /></div>
       ) : (
-        <div style={{ background: CARD, border: `1px solid ${LINE}`, borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ background: T.CARD, border: `1.5px solid ${T.LINE}`, borderRadius: 18, padding: "14px 16px", display: "flex", alignItems: "center", gap: 10, boxShadow: `0 2px 8px ${T.SHADOW}` }}>
           <div style={{ width: 100, height: 100, flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart><Pie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={48} strokeWidth={2} stroke={CARD}>{pieData.map((e, i) => <Cell key={i} fill={e.color} />)}</Pie></PieChart>
+              <PieChart><Pie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={48} strokeWidth={2} stroke={T.CARD}>{pieData.map((e, i) => <Cell key={i} fill={e.color} />)}</Pie></PieChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
             {pieData.slice(0, 4).map((e) => (
-              <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5 }}>
+              <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12 }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: e.color, flexShrink: 0 }} />
-                <span style={{ flex: 1, color: INK_SOFT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.name}</span>
-                <span style={{ fontFamily: F_MONO, color: INK, fontWeight: 600 }}>{fmtAmount(e.value)}</span>
+                <span style={{ flex: 1, color: T.INK_SOFT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 12.5 }}>{e.name}</span>
+                <span style={{ fontFamily: F_MONO, color: T.INK, fontWeight: 600, fontSize: 12 }}>{fmtAmount(e.value)}</span>
               </div>
             ))}
           </div>
@@ -465,7 +490,7 @@ function CategoriesScreen({ categories, transactions, onAdd, onEdit, onDelete })
 }
 const iconBtnStyle = { width: 26, height: 26, borderRadius: 7, border: `1px solid ${LINE}`, background: PAPER, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
 
-function TxModal({ tx, categories, onClose, onSave, onDelete }) {
+function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }) {
   const [type, setType] = useState(tx.type);
   const [amount, setAmount] = useState(String(tx.amount || ""));
   const [categoryId, setCategoryId] = useState(tx.categoryId);
@@ -476,39 +501,40 @@ function TxModal({ tx, categories, onClose, onSave, onDelete }) {
   const evaluated = evaluateExpression(amount);
   const finalAmount = evaluated !== null ? evaluated : Number(amount);
   const canSave = amount && finalAmount > 0 && categoryId;
+  const inputStyleThemed = getInputStyle(T);
 
   return (
-    <Sheet title={tx.id ? "Edit transaction" : "Add transaction"} onClose={onClose}
+    <Sheet title={tx.id ? "Edit transaction" : "Add transaction"} onClose={onClose} T={T}
       footer={
         <div style={{ display: "flex", gap: 10 }}>
-          {tx.id && <button onClick={() => onDelete(tx.id)} style={{ width: 46, height: 46, borderRadius: 12, border: `1.5px solid ${RED}55`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Trash2 size={18} color={RED} /></button>}
-          <div style={{ flex: 1 }}><PrimaryButton disabled={!canSave} color={type === "expense" ? RED : GREEN} onClick={() => onSave({ type, amount: finalAmount, categoryId, note: note.trim(), date }, tx.id)}><Check size={16} /> Save</PrimaryButton></div>
+          {tx.id && <button onClick={() => onDelete(tx.id)} style={{ width: 46, height: 46, borderRadius: 12, border: `1.5px solid ${T.RED}40`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all .2s" }}><Trash2 size={18} color={T.RED} /></button>}
+          <div style={{ flex: 1 }}><PrimaryButton disabled={!canSave} color={type === "expense" ? T.RED : T.GREEN} onClick={() => onSave({ type, amount: finalAmount, categoryId, note: note.trim(), date }, tx.id)}><Check size={16} /> Save</PrimaryButton></div>
         </div>
       }>
-      <SegmentedControl value={type} onChange={setType} accent={type === "expense" ? RED : GREEN} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }]} />
-      <div style={{ marginTop: 18 }}>
-        <Field label="Amount">
+      <SegmentedControl value={type} onChange={setType} accent={type === "expense" ? T.RED : T.GREEN} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }]} T={T} />
+      <div style={{ marginTop: 20 }}>
+        <Field label="Amount" T={T}>
           <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: INK_SOFT }}>₹</span>
-            <input autoFocus type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g. 400 + 800 + 900" style={{ ...inputStyle, paddingLeft: 26, fontFamily: F_MONO, fontSize: 18, fontWeight: 600 }} />
+            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: T.INK_SOFT, fontSize: 16, fontWeight: 600 }}>₹</span>
+            <input autoFocus type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g. 400 + 800 + 900" style={{ ...inputStyleThemed, paddingLeft: 30, fontFamily: F_MONO, fontSize: 18, fontWeight: 600 }} />
             {evaluated !== null && evaluated !== Number(amount) && (
-              <div style={{ marginTop: 8, padding: "8px 10px", borderRadius: 8, background: PAPER_DIM, fontFamily: F_MONO, fontSize: 13, color: INK, fontWeight: 600 }}>
+              <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 10, background: T.PAPER_DIM, fontFamily: F_MONO, fontSize: 13, color: T.INK, fontWeight: 600, border: `1px solid ${T.LINE}` }}>
                 = {fmtAmount(evaluated)}
               </div>
             )}
           </div>
         </Field>
-        <Field label="Category">
+        <Field label="Category" T={T}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {availableCats.map((c) => (
-              <button key={c.id} onClick={() => setCategoryId(c.id)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 11px", borderRadius: 20, border: `1.5px solid ${categoryId === c.id ? c.color : LINE}`, background: categoryId === c.id ? c.color + "1c" : CARD, cursor: "pointer" }}>
-                <IconStamp icon={c.icon} color={c.color} size={20} /><span style={{ fontSize: 12.5, fontWeight: 600, color: INK }}>{c.name}</span>
+              <button key={c.id} onClick={() => setCategoryId(c.id)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 13px", borderRadius: 22, border: `1.5px solid ${categoryId === c.id ? c.color : T.LINE}`, background: categoryId === c.id ? c.color + "15" : T.CARD, cursor: "pointer", transition: "all .2s" }}>
+                <IconStamp icon={c.icon} color={c.color} size={20} T={T} /><span style={{ fontSize: 13, fontWeight: 600, color: T.INK }}>{c.name}</span>
               </button>
             ))}
           </div>
         </Field>
-        <Field label="Note"><input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Coffee with Priya" style={inputStyle} /></Field>
-        <Field label="Date"><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} /></Field>
+        <Field label="Note" T={T}><input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Coffee with Priya" style={inputStyleThemed} /></Field>
+        <Field label="Date" T={T}><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyleThemed} /></Field>
       </div>
     </Sheet>
   );
@@ -548,15 +574,21 @@ function CategoryModal({ cat, onClose, onSave, onDelete }) {
   );
 }
 
-function SettingsModal({ email, onClose }) {
+function SettingsModal({ email, onClose, toggleTheme, currentTheme, T }) {
   return (
-    <Sheet title="Settings" onClose={onClose}>
-      <Field label="Signed in as"><div style={{ ...inputStyle, color: INK_SOFT }}>{email}</div></Field>
+    <Sheet title="Settings" onClose={onClose} T={T}>
+      <Field label="Signed in as" T={T}><div style={{ ...inputStyle, color: T.INK_SOFT, background: T.CARD, borderColor: T.LINE }}>{email}</div></Field>
+      <Field label="Theme" T={T}>
+        <button onClick={toggleTheme}
+          style={{ width: "100%", padding: "12px 16px", borderRadius: 14, border: `2px solid ${T.GOLD}40`, background: T.GOLD + "08", color: T.GOLD, fontFamily: F_BODY, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all .2s" }}>
+          {currentTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+        </button>
+      </Field>
       <button onClick={() => signOut({ callbackUrl: "/login" })}
-        style={{ width: "100%", padding: "13px 16px", borderRadius: 12, border: `1.5px solid ${RED}55`, background: "transparent", color: RED, fontFamily: F_BODY, fontWeight: 700, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        style={{ width: "100%", padding: "12px 16px", borderRadius: 12, border: `1.5px solid ${T.RED}40`, background: "transparent", color: T.RED, fontFamily: F_BODY, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 16, transition: "all .2s" }}>
         <LogOut size={16} /> Sign out
       </button>
-      <p style={{ fontSize: 12, color: INK_SOFT, lineHeight: 1.6, marginTop: 16 }}>Your data is stored in your own private account and syncs across any device you sign into.</p>
+      <p style={{ fontSize: 12, color: T.INK_SOFT, lineHeight: 1.6, marginTop: 20 }}>Your data is stored in your own private account and syncs across any device you sign into.</p>
     </Sheet>
   );
 }
