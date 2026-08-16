@@ -24,10 +24,18 @@ export async function POST(req) {
   if (!category || category.userId !== session.user.id) {
     return NextResponse.json({ error: "Invalid category" }, { status: 400 });
   }
+  // Validate accountId if provided
+  if (body.accountId) {
+    const account = await prisma.account.findUnique({ where: { id: body.accountId } });
+    if (!account || account.userId !== session.user.id) {
+      return NextResponse.json({ error: "Invalid account" }, { status: 400 });
+    }
+  }
   const tx = await prisma.transaction.create({
     data: {
       userId: session.user.id,
       categoryId: body.categoryId,
+      accountId: body.accountId || null,
       type: body.type === "income" ? "income" : "expense",
       amount: Number(body.amount),
       note: body.note || "",

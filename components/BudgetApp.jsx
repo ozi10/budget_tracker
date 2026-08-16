@@ -7,7 +7,8 @@ import {
   PieChart as PieChartIcon, Tags, ShoppingCart, Utensils, Car, Zap, Film,
   HeartPulse, GraduationCap, Plane, Gift, Briefcase, Coffee, Smartphone,
   PawPrint, Wrench, TrendingUp, Loader2, FileText, AlertCircle, Pencil,
-  ReceiptText, LogOut, Settings as SettingsIcon, Moon, Sun, DollarSign
+  ReceiptText, LogOut, Settings as SettingsIcon, Moon, Sun, DollarSign,
+  Building2, Banknote, CreditCard, ArrowLeftRight, RefreshCw
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
@@ -75,6 +76,13 @@ const ICONS = {
 };
 const ICON_KEYS = Object.keys(ICONS);
 const COLOR_PRESETS = ["#710014", "#2D7A5F", "#B38F6F", "#A85A6D", "#5BA892", "#1A4D3E", "#8B6B47", "#6B3A52", "#4A7C6B", "#161616", "#6B5B4F", "#9A6F5A", "#5A6B7A", "#7A5B6B", "#3D6B5A", "#8B7A5A"];
+
+const ACCOUNT_TYPES = {
+  bank:        { label: "Bank Account",  Icon: Building2,    color: "#1A4D3E" },
+  cash:        { label: "Cash",          Icon: Banknote,     color: "#8B6B47" },
+  credit_card: { label: "Credit Card",   Icon: CreditCard,   color: "#710014" },
+  upi:         { label: "UPI / Wallet",  Icon: Smartphone,   color: "#5A6B7A" },
+};
 
 /* -------------------------------- HELPERS ---------------------------------- */
 const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
@@ -261,7 +269,7 @@ const getInputStyle = (T) => ({
   transition: "all .2s ease" 
 });
 
-function TransactionRow({ t, category, onClick, isLast, T = THEMES.light }) {
+function TransactionRow({ t, category, account, onClick, isLast, T = THEMES.light }) {
   const isExpense = t.type === "expense";
   return (
     <button onClick={onClick} 
@@ -281,8 +289,13 @@ function TransactionRow({ t, category, onClick, isLast, T = THEMES.light }) {
       <IconStamp icon={category?.icon || "wallet"} color={category?.color || "#64748B"} size={42} T={T} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: F_BODY, fontWeight: 600, fontSize: 14.5, color: T.INK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.note || category?.name || "Transaction"}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11.5, color: T.INK_SOFT }}>{category?.name || "Other"}</span>
+          {account && (
+            <span style={{ fontSize: 10.5, padding: "1px 6px", borderRadius: 6, background: T.PAPER_DIM, color: T.INK_SOFT, fontWeight: 600, border: `1px solid ${T.LINE}` }}>
+              {account.type === "credit_card" ? "💳" : account.type === "cash" ? "💵" : account.type === "upi" ? "📱" : "🏦"} {account.name}
+            </span>
+          )}
           {t.source && t.source !== "manual" && (
             <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 6, background: T.GOLD_BG, color: T.GOLD, fontWeight: 600 }}>AI</span>
           )}
@@ -342,6 +355,8 @@ export default function BudgetApp() {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [transfers, setTransfers] = useState([]);
   const [screen, setScreen] = useState("home");
   const [txFilter, setTxFilter] = useState("all");
   const [fabOpen, setFabOpen] = useState(false);
@@ -349,6 +364,8 @@ export default function BudgetApp() {
   const [showAI, setShowAI] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [editingCat, setEditingCat] = useState(null);
+  const [editingAccount, setEditingAccount] = useState(null);
+  const [showTransfer, setShowTransfer] = useState(false);
   const [reportMonth, setReportMonth] = useState(() => { const d = new Date(); d.setDate(1); return d; });
 
   const toggleTheme = () => {
@@ -378,8 +395,14 @@ export default function BudgetApp() {
   useEffect(() => {
     (async () => {
       try {
-        const [cats, txs] = await Promise.all([api("/api/categories"), api("/api/transactions")]);
+        const [cats, txs, accs, trs] = await Promise.all([
+          api("/api/categories"),
+          api("/api/transactions"),
+          api("/api/accounts"),
+          api("/api/transfers"),
+        ]);
         setCategories(cats); setTransactions(txs);
+        setAccounts(accs); setTransfers(trs);
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     })();
@@ -416,7 +439,45 @@ export default function BudgetApp() {
     const txs = await api("/api/transactions");
     setCategories(cats); setTransactions(txs);
   }
-  function openAddTx() { setEditingTx({ type: "expense", amount: "", categoryId: categories.find((c) => c.type !== "income")?.id || categories[0]?.id, note: "", date: todayISO() }); setFabOpen(false); }
+  function openAddTx() { setEditingTx({ type: "expense", amount: "", categoryId: categories.find((c) => c.type !== "income")?.id || categories[0]?.id, accountId: null, note: "", date: todayISO() }); setFabOpen(false); }
+
+  // Recompute account balances from local state (avoids re-fetching)
+  const accountsWithBalance = useMemo(() => {
+    return accounts.map((acc) => {
+      let bal = Number(acc.openingBalance || 0);
+      for (const tx of transactions) {
+        if (tx.accountId !== acc.id) continue;
+        if (tx.type === "income") bal += Number(tx.amount);
+        else bal -= Number(tx.amount);
+      }
+      for (const tr of transfers) {
+        if (tr.toAccountId === acc.id) bal += Number(tr.amount);
+        if (tr.fromAccountId === acc.id) bal -= Number(tr.amount);
+      }
+      return { ...acc, balance: Math.round(bal * 100) / 100 };
+    });
+  }, [accounts, transactions, transfers]);
+
+  async function saveAccount(fields, id) {
+    const acc = id
+      ? await api(`/api/accounts/${id}`, { method: "PUT", body: JSON.stringify(fields) })
+      : await api("/api/accounts", { method: "POST", body: JSON.stringify(fields) });
+    setAccounts((prev) => (id ? prev.map((a) => (a.id === id ? acc : a)) : [...prev, acc]));
+    return acc;
+  }
+  async function removeAccount(id) {
+    await api(`/api/accounts/${id}`, { method: "DELETE" });
+    setAccounts((prev) => prev.filter((a) => a.id !== id));
+  }
+  async function saveTransfer(fields) {
+    const tr = await api("/api/transfers", { method: "POST", body: JSON.stringify(fields) });
+    setTransfers((prev) => [tr, ...prev]);
+    return tr;
+  }
+  async function removeTransfer(id) {
+    await api(`/api/transfers/${id}`, { method: "DELETE" });
+    setTransfers((prev) => prev.filter((t) => t.id !== id));
+  }
 
   if (loading || !mounted) {
     return (
@@ -456,17 +517,34 @@ export default function BudgetApp() {
             monthTotals={monthTotals} 
             transactions={transactions} 
             categories={categories}
+            accounts={accountsWithBalance}
+            accountsById={Object.fromEntries(accountsWithBalance.map((a) => [a.id, a]))}
             catById={catById} 
             onSeeAll={(f) => { setTxFilter(f || "all"); setScreen("transactions"); }} 
             onOpenTx={(t) => setEditingTx(t)} 
             onEditCat={(c) => setEditingCat(c)}
             onGoCategories={() => setScreen("categories")}
+            onGoWallets={() => setScreen("wallets")}
             T={T} 
           />
         )}
-        {screen === "transactions" && <TransactionsScreen transactions={transactions} catById={catById} filter={txFilter} setFilter={setTxFilter} onOpenTx={(t) => setEditingTx(t)} T={T} />}
+        {screen === "transactions" && <TransactionsScreen transactions={transactions} catById={catById} accountsById={Object.fromEntries(accountsWithBalance.map((a) => [a.id, a]))} filter={txFilter} setFilter={setTxFilter} onOpenTx={(t) => setEditingTx(t)} T={T} />}
         {screen === "reports" && <ReportsScreen transactions={transactions} categories={categories} catById={catById} month={reportMonth} setMonth={setReportMonth} T={T} />}
         {screen === "categories" && <CategoriesScreen categories={categories} transactions={transactions} onAdd={() => setEditingCat({ name: "", icon: "wallet", color: COLOR_PRESETS[0], type: "expense", monthlyBudget: null })} onEdit={(c) => setEditingCat(c)} onDelete={removeCategory} T={T} />}
+        {screen === "wallets" && (
+          <AccountsScreen
+            accounts={accountsWithBalance}
+            transfers={transfers}
+            transactions={transactions}
+            catById={catById}
+            onAdd={() => setEditingAccount({ name: "", type: "bank", openingBalance: "", color: ACCOUNT_TYPES.bank.color, creditLimit: "", billingDay: "", dueDay: "" })}
+            onEdit={(a) => setEditingAccount(a)}
+            onDelete={removeAccount}
+            onTransfer={() => setShowTransfer(true)}
+            onDeleteTransfer={removeTransfer}
+            T={T}
+          />
+        )}
       </main>
 
       {/* Floating Action Button with Backdrop */}
@@ -509,10 +587,12 @@ export default function BudgetApp() {
 
       <TabBar screen={screen} setScreen={setScreen} T={T} />
 
-      {editingTx && <TxModal tx={editingTx} categories={categories} onClose={() => setEditingTx(null)} onSave={async (fields, id) => { await saveTransaction(fields, id); setEditingTx(null); }} onDelete={async (id) => { await removeTransaction(id); setEditingTx(null); }} T={T} />}
+      {editingTx && <TxModal tx={editingTx} categories={categories} accounts={accountsWithBalance} onClose={() => setEditingTx(null)} onSave={async (fields, id) => { await saveTransaction(fields, id); setEditingTx(null); }} onDelete={async (id) => { await removeTransaction(id); setEditingTx(null); }} T={T} />}
       {showAI && <AIModal categories={categories} onClose={() => setShowAI(false)} onCreateCategory={saveCategory} onImport={async (txs) => { for (const t of txs) await saveTransaction(t); setShowAI(false); }} apiKey={aiApiKey} T={T} />}
       {editingCat && <CategoryModal cat={editingCat} onClose={() => setEditingCat(null)} onSave={async (fields, id) => { await saveCategory(fields, id); setEditingCat(null); }} onDelete={async (id) => { await removeCategory(id); setEditingCat(null); }} T={T} />}
       {showSettings && <SettingsModal email={session?.user?.email} onClose={() => setShowSettings(false)} toggleTheme={toggleTheme} currentTheme={theme} T={T} apiKey={aiApiKey} onApiKeyChange={setAiApiKey} />}
+      {editingAccount && <AccountModal account={editingAccount} onClose={() => setEditingAccount(null)} onSave={async (fields, id) => { await saveAccount(fields, id); setEditingAccount(null); }} onDelete={async (id) => { await removeAccount(id); setEditingAccount(null); }} T={T} />}
+      {showTransfer && <TransferModal accounts={accountsWithBalance} onClose={() => setShowTransfer(false)} onSave={async (fields) => { await saveTransfer(fields); setShowTransfer(false); }} T={T} />}
     </div>
   );
 }
@@ -577,8 +657,9 @@ function TabBar({ screen, setScreen, T }) {
   const tabs = [
     { key: "home", label: "Home", icon: HomeIcon }, 
     { key: "transactions", label: "Ledger", icon: ListIcon }, 
+    { key: "wallets", label: "Wallets", icon: Wallet },
     { key: "reports", label: "Reports", icon: PieChartIcon }, 
-    { key: "categories", label: "Categories", icon: Tags }
+    { key: "categories", label: "Tags", icon: Tags }
   ];
   return (
     <div style={{ 
@@ -586,8 +667,8 @@ function TabBar({ screen, setScreen, T }) {
       borderTop: `1px solid ${T.LINE}`, 
       background: T.CARD, 
       paddingTop: 6,
-      paddingLeft: 12,
-      paddingRight: 12,
+      paddingLeft: 8,
+      paddingRight: 8,
       paddingBottom: "max(10px, env(safe-area-inset-bottom, 0px))", 
       boxShadow: T.SHADOW_MD,
       flexShrink: 0,
@@ -601,24 +682,25 @@ function TabBar({ screen, setScreen, T }) {
               flex: 1, 
               background: active ? T.GOLD_BG : "transparent", 
               border: "none", 
-              borderRadius: 14,
+              borderRadius: 12,
               display: "flex", 
               flexDirection: "column", 
               alignItems: "center", 
-              gap: 4, 
-              padding: "7px 4px", 
+              gap: 3, 
+              padding: "7px 2px", 
               cursor: "pointer", 
               transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)", 
-              opacity: active ? 1 : 0.6 
+              opacity: active ? 1 : 0.55 
             }}>
-            <Ic size={20} color={active ? T.GOLD : T.INK_SOFT} strokeWidth={active ? 2.5 : 2} />
-            <span style={{ fontSize: 11, fontWeight: active ? 700 : 500, color: active ? (T.INK || T.GOLD) : T.INK_SOFT }}>{t.label}</span>
+            <Ic size={19} color={active ? T.GOLD : T.INK_SOFT} strokeWidth={active ? 2.5 : 2} />
+            <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, color: active ? (T.INK || T.GOLD) : T.INK_SOFT }}>{t.label}</span>
           </button>
         );
       })}
     </div>
   );
 }
+
 
 function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }) {
   return (
@@ -663,7 +745,7 @@ function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }
   );
 }
 
-function HomeScreen({ monthTotals, transactions, categories, catById, onSeeAll, onOpenTx, onEditCat, onGoCategories, T = THEMES.light }) {
+function HomeScreen({ monthTotals, transactions, categories, accounts = [], accountsById = {}, catById, onSeeAll, onOpenTx, onEditCat, onGoCategories, onGoWallets, T = THEMES.light }) {
   const recent = transactions.slice(0, 5);
   const thisMonth = new Date();
 
@@ -760,6 +842,53 @@ function HomeScreen({ monthTotals, transactions, categories, catById, onSeeAll, 
           </div>
         </button>
       </div>
+
+      {/* Wallets & Accounts Quick Overview */}
+      <SectionTitle action={accounts.length > 0 ? "All Accounts →" : "Add Wallet +"} onAction={onGoWallets} T={T}>
+        Wallets & Accounts
+      </SectionTitle>
+      {accounts.length === 0 ? (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "18px 16px", boxShadow: T.SHADOW_MD, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 14, background: T.GOLD_BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Wallet size={20} color={T.GOLD} />
+            </div>
+            <div>
+              <div style={{ fontFamily: F_BODY, fontWeight: 700, fontSize: 13.5, color: T.INK }}>Track your bank, cash & cards</div>
+              <div style={{ fontSize: 11.5, color: T.INK_SOFT }}>See real-time balances and credit card limits</div>
+            </div>
+          </div>
+          <button onClick={onGoWallets} style={{ padding: "7px 12px", borderRadius: 10, border: `1px solid ${T.GOLD}40`, background: T.GOLD_BG, color: T.GOLD, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+            Add
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: accounts.length === 1 ? "1fr" : "repeat(2, 1fr)", gap: 10 }}>
+          {accounts.slice(0, 4).map((acc) => {
+            const typeInfo = ACCOUNT_TYPES[acc.type] || ACCOUNT_TYPES.bank;
+            const TypeIcon = typeInfo.Icon;
+            const isCC = acc.type === "credit_card";
+            return (
+              <div key={acc.id} onClick={onGoWallets} style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 18, padding: "12px 14px", boxShadow: T.SHADOW_MD, cursor: "pointer", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: acc.color + "18", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <TypeIcon size={15} color={acc.color} />
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.4 }}>
+                    {typeInfo.label.split(" ")[0]}
+                  </span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: T.INK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{acc.name}</div>
+                  <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 14, color: isCC ? (acc.balance > 0 ? T.RED : T.INK) : (acc.balance < 0 ? T.RED : T.INK), marginTop: 2 }}>
+                    {fmtAmount(acc.balance)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Category Budgets & Visual Progress Bars Section */}
       <SectionTitle action={budgetedCategories.length > 0 ? "Manage →" : "Set Budgets +"} onAction={onGoCategories} T={T}>
@@ -903,7 +1032,7 @@ function HomeScreen({ monthTotals, transactions, categories, catById, onSeeAll, 
       ) : (
         <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "6px 14px", boxShadow: T.SHADOW_MD }}>
           {recent.map((t, idx) => (
-            <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} isLast={idx === recent.length - 1} onClick={() => onOpenTx(t)} T={T} />
+            <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} account={accountsById[t.accountId]} isLast={idx === recent.length - 1} onClick={() => onOpenTx(t)} T={T} />
           ))}
         </div>
       )}
@@ -911,7 +1040,7 @@ function HomeScreen({ monthTotals, transactions, categories, catById, onSeeAll, 
   );
 }
 
-function TransactionsScreen({ transactions, catById, filter, setFilter, onOpenTx, T = THEMES.light }) {
+function TransactionsScreen({ transactions, catById, accountsById = {}, filter, setFilter, onOpenTx, T = THEMES.light }) {
   const filtered = useMemo(() => transactions.filter((t) => filter === "all" || t.type === filter), [transactions, filter]);
   const grouped = useMemo(() => groupByDate(filtered), [filtered]);
   const total = useMemo(() => filtered.reduce((s, t) => s + (t.type === "expense" ? -1 : 1) * Number(t.amount), 0), [filtered]);
@@ -935,7 +1064,7 @@ function TransactionsScreen({ transactions, catById, filter, setFilter, onOpenTx
           </div>
           <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "4px 14px", boxShadow: T.SHADOW_MD }}>
             {txs.map((t, idx) => (
-              <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} isLast={idx === txs.length - 1} onClick={() => onOpenTx(t)} T={T} />
+              <TransactionRow key={t.id} t={t} category={catById[t.categoryId]} account={accountsById[t.accountId]} isLast={idx === txs.length - 1} onClick={() => onOpenTx(t)} T={T} />
             ))}
           </div>
         </div>
@@ -1134,10 +1263,11 @@ function CategoriesScreen({ categories, transactions, onAdd, onEdit, onDelete, T
 
 const iconBtnStyle = { height: 32, padding: "0 8px", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "1px solid transparent", transition: "all .15s ease" };
 
-function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }) {
+function TxModal({ tx, categories, accounts = [], onClose, onSave, onDelete, T = THEMES.light }) {
   const [type, setType] = useState(tx.type);
   const [amount, setAmount] = useState(String(tx.amount || ""));
   const [categoryId, setCategoryId] = useState(tx.categoryId);
+  const [accountId, setAccountId] = useState(tx.accountId || null);
   const [note, setNote] = useState(tx.note || "");
   const [date, setDate] = useState(tx.date ? toDateInput(tx.date) : todayISO());
   const availableCats = categories.filter((c) => c.type === type || c.type === "both");
@@ -1157,7 +1287,7 @@ function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }
             </button>
           )}
           <div style={{ flex: 1 }}>
-            <PrimaryButton disabled={!canSave} color={type === "expense" ? T.RED : T.GREEN} onClick={() => onSave({ type, amount: finalAmount, categoryId, note: note.trim(), date }, tx.id)}>
+            <PrimaryButton disabled={!canSave} color={type === "expense" ? T.RED : T.GREEN} onClick={() => onSave({ type, amount: finalAmount, categoryId, accountId: accountId || null, note: note.trim(), date }, tx.id)}>
               <Check size={16} strokeWidth={2.5} /> Save Transaction
             </PrimaryButton>
           </div>
@@ -1197,6 +1327,54 @@ function TxModal({ tx, categories, onClose, onSave, onDelete, T = THEMES.light }
             ))}
           </div>
         </Field>
+
+        {accounts.length > 0 && (
+          <Field label="Account / Wallet (Optional)" T={T}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <button type="button" onClick={() => setAccountId(null)} 
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 6, 
+                  padding: "6px 12px", 
+                  borderRadius: 12, 
+                  border: `1.5px solid ${accountId === null ? T.INK : T.LINE}`, 
+                  background: accountId === null ? T.PAPER_DIM : T.PAPER, 
+                  cursor: "pointer", 
+                  fontSize: 12, 
+                  fontWeight: 600, 
+                  color: T.INK 
+                }}>
+                Unassigned
+              </button>
+              {accounts.map((a) => {
+                const typeInfo = ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.bank;
+                const TypeIcon = typeInfo.Icon;
+                const isSelected = accountId === a.id;
+                return (
+                  <button type="button" key={a.id} onClick={() => setAccountId(a.id)} 
+                    style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: 6, 
+                      padding: "6px 12px", 
+                      borderRadius: 12, 
+                      border: `1.5px solid ${isSelected ? a.color : T.LINE}`, 
+                      background: isSelected ? a.color + "18" : T.PAPER, 
+                      cursor: "pointer", 
+                      fontSize: 12, 
+                      fontWeight: 600, 
+                      color: T.INK 
+                    }}>
+                    <TypeIcon size={14} color={a.color} />
+                    <span>{a.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+        )}
+
         <Field label="Description" T={T}><input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Dinner with team" style={inputStyleThemed} /></Field>
         <Field label="Date" T={T}><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...inputStyleThemed, padding: "10px 12px", fontSize: 14 }} /></Field>
       </div>
@@ -1457,5 +1635,481 @@ function AIModal({ categories, onClose, onImport, onCreateCategory, apiKey, T = 
     </Sheet>
   );
 }
+
+function AccountsScreen({ accounts = [], transfers = [], transactions = [], catById = {}, onAdd, onEdit, onDelete, onTransfer, onDeleteTransfer, T = THEMES.light }) {
+  // Compute totals
+  const { netWorth, totalAssets, totalDebt } = useMemo(() => {
+    let assets = 0, debt = 0;
+    for (const a of accounts) {
+      if (a.type === "credit_card") {
+        debt += Math.max(0, a.balance);
+      } else {
+        if (a.balance >= 0) assets += a.balance;
+        else debt += Math.abs(a.balance);
+      }
+    }
+    return { netWorth: assets - debt, totalAssets: assets, totalDebt: debt };
+  }, [accounts]);
+
+  const [filterType, setFilterType] = useState("all");
+
+  const filteredAccounts = useMemo(() => {
+    if (filterType === "all") return accounts;
+    return accounts.filter((a) => a.type === filterType);
+  }, [accounts, filterType]);
+
+  return (
+    <div>
+      {/* Net Worth Summary Card */}
+      <div style={{ marginTop: 16, padding: "18px 20px", borderRadius: 24, background: T.CARD, border: `1px solid ${T.LINE}`, boxShadow: T.SHADOW_MD }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.6 }}>Total Net Worth</div>
+        <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 28, color: netWorth < 0 ? T.RED : T.INK, marginTop: 4, letterSpacing: -0.5 }}>
+          {fmtAmount(netWorth)}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14, paddingTop: 12, borderTop: `1px solid ${T.LINE_SUBTLE}` }}>
+          <div>
+            <div style={{ fontSize: 10.5, fontWeight: 600, color: T.INK_SOFT, textTransform: "uppercase" }}>Total Assets</div>
+            <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 15, color: T.GREEN, marginTop: 2 }}>{fmtAmount(totalAssets)}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10.5, fontWeight: 600, color: T.INK_SOFT, textTransform: "uppercase" }}>Credit / Debt</div>
+            <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 15, color: totalDebt > 0 ? T.RED : T.INK_SOFT, marginTop: 2 }}>{fmtAmount(totalDebt)}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14, marginBottom: 8 }}>
+        <PrimaryButton onClick={onTransfer} color={T.GOLD} T={T}>
+          <ArrowLeftRight size={16} strokeWidth={2.5} /> Transfer Funds
+        </PrimaryButton>
+        <button onClick={onAdd}
+          style={{ width: "100%", padding: "14px 16px", borderRadius: 16, border: `1px solid ${T.LINE}`, background: T.CARD, color: T.INK, fontFamily: F_BODY, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: T.SHADOW_MD }}>
+          <Plus size={16} strokeWidth={2.5} /> New Account
+        </button>
+      </div>
+
+      {/* Filter Tabs */}
+      <div style={{ marginTop: 12 }}>
+        <SegmentedControl 
+          value={filterType} 
+          onChange={setFilterType} 
+          options={[
+            { value: "all", label: "All" },
+            { value: "bank", label: "Banks" },
+            { value: "credit_card", label: "Cards" },
+            { value: "cash", label: "Cash" },
+            { value: "upi", label: "UPI" }
+          ]} 
+          T={T} 
+        />
+      </div>
+
+      {/* Accounts List */}
+      <SectionTitle T={T}>
+        {filterType === "all" ? "All Wallets & Accounts" : `${ACCOUNT_TYPES[filterType]?.label || "Account"}s`}
+      </SectionTitle>
+
+      {filteredAccounts.length === 0 ? (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "28px 20px", textAlign: "center", boxShadow: T.SHADOW_MD }}>
+          <EmptyState icon={Wallet} title="No accounts yet" sub="Add your bank accounts, cash in hand, or credit cards to track live balances." T={T} />
+          <button onClick={onAdd} style={{ marginTop: 12, padding: "10px 18px", borderRadius: 12, border: "none", background: T.GOLD, color: "#FFFFFF", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+            Add First Account
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {filteredAccounts.map((acc) => {
+            const typeInfo = ACCOUNT_TYPES[acc.type] || ACCOUNT_TYPES.bank;
+            const TypeIcon = typeInfo.Icon;
+            const isCC = acc.type === "credit_card";
+            const creditLimit = acc.creditLimit ? Number(acc.creditLimit) : null;
+            const outstanding = Math.max(0, acc.balance);
+            const ccUtilization = creditLimit && creditLimit > 0 ? Math.round((outstanding / creditLimit) * 100) : null;
+
+            return (
+              <div key={acc.id} 
+                style={{ 
+                  background: T.CARD, 
+                  border: `1px solid ${T.LINE}`, 
+                  borderRadius: 22, 
+                  padding: "18px 18px", 
+                  boxShadow: T.SHADOW_MD,
+                  position: "relative",
+                  overflow: "hidden"
+                }}>
+                {/* Accent top stripe */}
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: acc.color }} />
+
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 14, background: acc.color + "18", border: `1px solid ${acc.color}35`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <TypeIcon size={22} color={acc.color} />
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F_BODY, fontWeight: 700, fontSize: 16, color: T.INK }}>{acc.name}</div>
+                      <div style={{ fontSize: 11.5, color: T.INK_SOFT, marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
+                        <span>{typeInfo.label}</span>
+                        {acc.openingBalance !== 0 && <span>· Open: {fmtAmount(acc.openingBalance)}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.4 }}>
+                      {isCC ? "Outstanding" : "Balance"}
+                    </div>
+                    <div style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 18, color: isCC ? (outstanding > 0 ? T.RED : T.INK) : (acc.balance < 0 ? T.RED : T.INK), marginTop: 2 }}>
+                      {fmtAmount(acc.balance)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Credit Card Specific: Utilization & Cycle Days */}
+                {isCC && (
+                  <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${T.LINE_SUBTLE}` }}>
+                    {creditLimit && creditLimit > 0 && (
+                      <div style={{ marginBottom: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 5 }}>
+                          <span style={{ color: T.INK_SOFT }}>Credit Limit: <strong style={{ color: T.INK, fontFamily: F_MONO }}>{fmtAmount(creditLimit)}</strong></span>
+                          <span style={{ fontFamily: F_MONO, fontWeight: 700, color: ccUtilization >= 80 ? T.RED : ccUtilization >= 50 ? T.GOLD : T.GREEN }}>
+                            {ccUtilization}% used
+                          </span>
+                        </div>
+                        <div style={{ height: 6, borderRadius: 6, background: T.PAPER_DIM, overflow: "hidden" }}>
+                          <div style={{ width: `${Math.min(ccUtilization || 0, 100)}%`, height: "100%", borderRadius: 6, background: ccUtilization >= 80 ? T.RED : ccUtilization >= 50 ? T.GOLD : T.GREEN, transition: "width 0.4s ease" }} />
+                        </div>
+                      </div>
+                    )}
+
+                    {(acc.billingDay || acc.dueDay) && (
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", fontSize: 11, color: T.INK_SOFT }}>
+                        {acc.billingDay && (
+                          <span style={{ padding: "3px 8px", borderRadius: 8, background: T.PAPER_DIM, border: `1px solid ${T.LINE}` }}>
+                            📅 Statement: <strong>{acc.billingDay}th</strong> of month
+                          </span>
+                        )}
+                        {acc.dueDay && (
+                          <span style={{ padding: "3px 8px", borderRadius: 8, background: T.RED_BG, border: `1px solid ${T.RED}30`, color: T.RED, fontWeight: 600 }}>
+                            ⏰ Payment Due: <strong>{acc.dueDay}th</strong>
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Card Actions */}
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 14, paddingTop: 10, borderTop: `1px solid ${T.LINE_SUBTLE}` }}>
+                  <button onClick={() => onEdit(acc)} style={{ ...iconBtnStyle, borderColor: T.LINE, background: T.PAPER_DIM, padding: "6px 12px", height: "auto" }}>
+                    <Pencil size={13} color={T.INK_SOFT} />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: T.INK_SOFT, marginLeft: 4 }}>Edit</span>
+                  </button>
+                  <button onClick={() => onDelete(acc.id)} style={{ ...iconBtnStyle, borderColor: T.RED + "30", background: T.RED_BG, padding: "6px 12px", height: "auto" }}>
+                    <Trash2 size={13} color={T.RED} />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: T.RED, marginLeft: 4 }}>Delete</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Transfers History Section */}
+      <SectionTitle T={T}>Inter-Account Transfers</SectionTitle>
+      {transfers.length === 0 ? (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "20px", boxShadow: T.SHADOW_MD, textAlign: "center" }}>
+          <EmptyState icon={ArrowLeftRight} title="No transfers yet" sub="Record ATM cash withdrawals, wallet top-ups, or credit card bill payments here." T={T} />
+        </div>
+      ) : (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "8px 14px", boxShadow: T.SHADOW_MD }}>
+          {transfers.map((tr, idx) => {
+            const fromAcc = accounts.find((a) => a.id === tr.fromAccountId);
+            const toAcc = accounts.find((a) => a.id === tr.toAccountId);
+            return (
+              <div key={tr.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 4px", borderBottom: idx === transfers.length - 1 ? "none" : `1px solid ${T.LINE_SUBTLE}` }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: T.GOLD_BG, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <ArrowLeftRight size={16} color={T.GOLD} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: T.INK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {fromAcc?.name || "Account"} → {toAcc?.name || "Account"}
+                    </div>
+                    <div style={{ fontSize: 11, color: T.INK_SOFT, marginTop: 1 }}>
+                      {fmtDateHeader(toDateInput(tr.date))} {tr.note ? `· ${tr.note}` : ""}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  <span style={{ fontFamily: F_MONO, fontWeight: 700, fontSize: 14, color: T.INK }}>
+                    {fmtAmount(tr.amount)}
+                  </span>
+                  <button onClick={() => onDeleteTransfer(tr.id)} aria-label="Delete transfer" style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+                    <Trash2 size={14} color={T.RED} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AccountModal({ account, onClose, onSave, onDelete, T = THEMES.light }) {
+  const [name, setName] = useState(account.name || "");
+  const [type, setType] = useState(account.type || "bank");
+  const [openingBalance, setOpeningBalance] = useState(account.openingBalance !== undefined ? String(account.openingBalance || "") : "");
+  const [color, setColor] = useState(account.color || ACCOUNT_TYPES[account.type || "bank"]?.color || "#1A4D3E");
+  const [creditLimit, setCreditLimit] = useState(account.creditLimit ? String(account.creditLimit) : "");
+  const [billingDay, setBillingDay] = useState(account.billingDay ? String(account.billingDay) : "");
+  const [dueDay, setDueDay] = useState(account.dueDay ? String(account.dueDay) : "");
+
+  const isNew = !account.id;
+  const canSave = name.trim().length > 0;
+  const inputStyleThemed = getInputStyle(T);
+
+  const evaluatedOpenBal = evaluateExpression(openingBalance);
+  const finalOpenBal = evaluatedOpenBal !== null ? evaluatedOpenBal : (openingBalance.trim() ? Number(openingBalance) : 0);
+
+  const evaluatedLimit = evaluateExpression(creditLimit);
+  const finalLimit = evaluatedLimit !== null ? evaluatedLimit : (creditLimit.trim() ? Number(creditLimit) : null);
+
+  const handleTypeChange = (newType) => {
+    setType(newType);
+    if (!account.id) {
+      setColor(ACCOUNT_TYPES[newType]?.color || COLOR_PRESETS[0]);
+    }
+  };
+
+  return (
+    <Sheet title={isNew ? "New Account / Wallet" : "Edit Account"} onClose={onClose} T={T}
+      footer={
+        <div style={{ display: "flex", gap: 10 }}>
+          {!isNew && (
+            <button onClick={() => onDelete(account.id)} aria-label="Delete" style={{ width: 48, height: 48, borderRadius: 14, border: `1px solid ${T.RED}35`, background: T.RED_BG, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <Trash2 size={18} color={T.RED} />
+            </button>
+          )}
+          <div style={{ flex: 1 }}>
+            <PrimaryButton disabled={!canSave} color={color || T.GOLD} onClick={() => onSave({ 
+              name: name.trim(), 
+              type, 
+              color, 
+              openingBalance: finalOpenBal,
+              creditLimit: type === "credit_card" ? finalLimit : null,
+              billingDay: type === "credit_card" && billingDay ? Number(billingDay) : null,
+              dueDay: type === "credit_card" && dueDay ? Number(dueDay) : null
+            }, account.id)} T={T}>
+              <Check size={16} strokeWidth={2.5} /> Save Account
+            </PrimaryButton>
+          </div>
+        </div>
+      }>
+      
+      <Field label="Account Type" T={T}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {Object.entries(ACCOUNT_TYPES).map(([k, info]) => {
+            const Icon = info.Icon;
+            const isSelected = type === k;
+            return (
+              <button key={k} type="button" onClick={() => handleTypeChange(k)}
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 8, 
+                  padding: "10px 12px", 
+                  borderRadius: 14, 
+                  border: `1.5px solid ${isSelected ? info.color : T.LINE}`, 
+                  background: isSelected ? info.color + "18" : T.PAPER, 
+                  cursor: "pointer",
+                  transition: "all .18s ease" 
+                }}>
+                <Icon size={18} color={isSelected ? info.color : T.INK_SOFT} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: T.INK }}>{info.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+
+      <Field label="Account Name" T={T}>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder={type === "credit_card" ? "e.g. Amazon Pay ICICI Card" : type === "bank" ? "e.g. HDFC Salary Account" : type === "cash" ? "e.g. Cash in Hand" : "e.g. Google Pay / Paytm"} style={inputStyleThemed} />
+      </Field>
+
+      <Field label={type === "credit_card" ? "Initial Outstanding Balance" : "Starting / Current Balance"} T={T}>
+        <div style={{ position: "relative" }}>
+          <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: T.INK_SOFT, fontSize: 16, fontWeight: 700 }}>₹</span>
+          <input 
+            type="text" 
+            inputMode="decimal" 
+            value={openingBalance} 
+            onChange={(e) => setOpeningBalance(e.target.value)} 
+            placeholder="0.00" 
+            style={{ ...inputStyleThemed, paddingLeft: 34, fontFamily: F_MONO, fontWeight: 600 }} 
+          />
+        </div>
+        <div style={{ fontSize: 11.5, color: T.INK_SOFT, marginTop: 5 }}>
+          {type === "credit_card" ? "Enter any existing unpaid bill amount" : "Your current balance in this account"}
+        </div>
+      </Field>
+
+      {/* Credit Card Specific Fields */}
+      {type === "credit_card" && (
+        <>
+          <Field label="Credit Limit (Optional)" T={T}>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: T.INK_SOFT, fontSize: 16, fontWeight: 700 }}>₹</span>
+              <input 
+                type="text" 
+                inputMode="decimal" 
+                value={creditLimit} 
+                onChange={(e) => setCreditLimit(e.target.value)} 
+                placeholder="e.g. 150000" 
+                style={{ ...inputStyleThemed, paddingLeft: 34, fontFamily: F_MONO, fontWeight: 600 }} 
+              />
+            </div>
+          </Field>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <Field label="Statement Date" T={T}>
+              <input 
+                type="number" 
+                min={1} 
+                max={28} 
+                value={billingDay} 
+                onChange={(e) => setBillingDay(e.target.value)} 
+                placeholder="Day (1-28)" 
+                style={inputStyleThemed} 
+              />
+            </Field>
+            <Field label="Payment Due Date" T={T}>
+              <input 
+                type="number" 
+                min={1} 
+                max={28} 
+                value={dueDay} 
+                onChange={(e) => setDueDay(e.target.value)} 
+                placeholder="Day (1-28)" 
+                style={inputStyleThemed} 
+              />
+            </Field>
+          </div>
+        </>
+      )}
+
+      <Field label="Accent Color" T={T}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
+          {COLOR_PRESETS.map((c) => (
+            <button key={c} type="button" onClick={() => setColor(c)} 
+              style={{ 
+                width: 30, 
+                height: 30, 
+                borderRadius: 10, 
+                background: c, 
+                border: color === c ? `3px solid ${T.INK}` : "1px solid rgba(0,0,0,0.1)", 
+                cursor: "pointer",
+                boxShadow: color === c ? `0 2px 8px ${c}50` : "none",
+                transform: color === c ? "scale(1.1)" : "scale(1)",
+                transition: "all .15s ease" 
+              }} />
+          ))}
+        </div>
+      </Field>
+    </Sheet>
+  );
+}
+
+function TransferModal({ accounts = [], onClose, onSave, T = THEMES.light }) {
+  const [fromAccountId, setFromAccountId] = useState(accounts[0]?.id || "");
+  const [toAccountId, setToAccountId] = useState(accounts[1]?.id || accounts[0]?.id || "");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(todayISO());
+  const [note, setNote] = useState("");
+  const [error, setError] = useState("");
+
+  const inputStyleThemed = getInputStyle(T);
+  const evaluated = evaluateExpression(amount);
+  const finalAmount = evaluated !== null ? evaluated : Number(amount);
+  const canSave = fromAccountId && toAccountId && fromAccountId !== toAccountId && amount && finalAmount > 0;
+
+  function handleSubmit() {
+    if (fromAccountId === toAccountId) {
+      setError("Please choose two different accounts for the transfer.");
+      return;
+    }
+    if (!finalAmount || finalAmount <= 0) {
+      setError("Please enter a valid transfer amount.");
+      return;
+    }
+    onSave({ fromAccountId, toAccountId, amount: finalAmount, date, note: note.trim() });
+  }
+
+  return (
+    <Sheet title="Transfer Between Accounts" onClose={onClose} T={T}
+      footer={
+        <PrimaryButton disabled={!canSave} color={T.GOLD} onClick={handleSubmit} T={T}>
+          <Check size={16} strokeWidth={2.5} /> Record Transfer
+        </PrimaryButton>
+      }>
+      
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <div>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>From</label>
+          <select value={fromAccountId} onChange={(e) => { setFromAccountId(e.target.value); setError(""); }} style={{ ...inputStyleThemed, padding: "10px 8px", fontSize: 13 }}>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>{a.name} ({fmtAmount(a.balance)})</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ paddingTop: 18 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: T.PAPER_DIM, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ArrowLeftRight size={14} color={T.INK_SOFT} />
+          </div>
+        </div>
+
+        <div>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.INK_SOFT, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>To</label>
+          <select value={toAccountId} onChange={(e) => { setToAccountId(e.target.value); setError(""); }} style={{ ...inputStyleThemed, padding: "10px 8px", fontSize: 13 }}>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>{a.name} ({fmtAmount(a.balance)})</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <Field label="Transfer Amount" T={T}>
+        <div style={{ position: "relative" }}>
+          <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: F_MONO, color: T.INK_SOFT, fontSize: 18, fontWeight: 700 }}>₹</span>
+          <input autoFocus type="text" inputMode="decimal" value={amount} onChange={(e) => { setAmount(e.target.value); setError(""); }} placeholder="0.00" style={{ ...inputStyleThemed, paddingLeft: 34, fontFamily: F_MONO, fontSize: 20, fontWeight: 700 }} />
+          {evaluated !== null && evaluated !== Number(amount) && (
+            <div style={{ marginTop: 8, padding: "8px 12px", borderRadius: 10, background: T.PAPER_DIM, fontFamily: F_MONO, fontSize: 13, color: T.INK, fontWeight: 600, border: `1px solid ${T.LINE}` }}>
+              = {fmtAmount(evaluated)}
+            </div>
+          )}
+        </div>
+      </Field>
+
+      <Field label="Transfer Date" T={T}>
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyleThemed} />
+      </Field>
+
+      <Field label="Note (Optional)" T={T}>
+        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. ATM withdrawal, Credit card bill payment" style={inputStyleThemed} />
+      </Field>
+
+      {error && (
+        <div style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center", background: T.RED_BG, border: `1px solid ${T.RED}30`, borderRadius: 12, padding: "10px 14px", color: T.RED, fontSize: 12.5 }}>
+          <AlertCircle size={15} />
+          <span>{error}</span>
+        </div>
+      )}
+    </Sheet>
+  );
+}
+
 
 

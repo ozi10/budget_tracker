@@ -14,6 +14,8 @@ model User {
   createdAt    DateTime      @default(now())
   categories   Category[]
   transactions Transaction[]
+  accounts     Account[]
+  transfers    Transfer[]
 }
 
 model Category {
@@ -38,6 +40,8 @@ model Transaction {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
+  accountId  String? // Optional: which account was debited/credited
+  account    Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
   type       String // "expense" | "income"
   amount     Float
   note       String?
@@ -47,4 +51,44 @@ model Transaction {
 
   @@index([userId])
   @@index([userId, date])
+  @@index([accountId])
+}
+
+model Account {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  type           String        // "bank" | "cash" | "credit_card" | "upi"
+  color          String        @default("#1A4D3E")
+  icon           String        @default("building")
+  openingBalance Float         @default(0) // Starting balance when account was added
+  // Credit card specific fields
+  creditLimit    Float?        // Credit limit for credit_card type
+  billingDay     Int?          // Day of month billing cycle starts (1–28)
+  dueDay         Int?          // Day of month payment is due (1–28)
+  createdAt      DateTime      @default(now())
+  transactions   Transaction[]
+  transfersFrom  Transfer[]    @relation("FromAccount")
+  transfersTo    Transfer[]    @relation("ToAccount")
+
+  @@index([userId])
+}
+
+model Transfer {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromAccountId String
+  toAccountId   String
+  fromAccount   Account  @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
+  toAccount     Account  @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
+  amount        Float
+  note          String?
+  date          DateTime
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([fromAccountId])
+  @@index([toAccountId])
 }
