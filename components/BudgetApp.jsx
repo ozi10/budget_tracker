@@ -1382,7 +1382,11 @@ function TxModal({ tx, categories, accounts = [], onClose, onSave, onDelete, T =
         )}
 
         <Field label="Description" T={T}><input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Dinner with team" style={inputStyleThemed} /></Field>
-        <Field label="Date" T={T}><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...inputStyleThemed, padding: "10px 12px", fontSize: 14 }} /></Field>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Field label="Date" T={T}>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...inputStyleThemed, width: 150, minWidth: 0, padding: "8px 10px", fontSize: 13, lineHeight: 1.2 }} />
+          </Field>
+        </div>
       </div>
     </Sheet>
   );
