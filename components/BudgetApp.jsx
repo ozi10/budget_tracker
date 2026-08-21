@@ -746,8 +746,8 @@ function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }
 }
 
 function HomeScreen({ monthTotals, transactions, categories, accounts = [], accountsById = {}, catById, onSeeAll, onOpenTx, onEditCat, onGoCategories, onGoWallets, T = THEMES.light }) {
-  const recent = transactions.slice(0, 5);
-  const thisMonth = new Date();
+  const recent = useMemo(() => transactions.slice(0, 5), [transactions]);
+  const thisMonth = useMemo(() => new Date(), []);
 
   // Category spending calculation for current month
   const categorySpendMap = useMemo(() => {
@@ -842,6 +842,44 @@ function HomeScreen({ monthTotals, transactions, categories, accounts = [], acco
           </div>
         </button>
       </div>
+
+      {/* Spending Breakdown Donut Card */}
+      <SectionTitle T={T}>Monthly Spending by Category</SectionTitle>
+      {pieData.length === 0 ? (
+        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "24px 16px", boxShadow: T.SHADOW_MD }}>
+          <EmptyState icon={PieChartIcon} title="No spending logged" sub="Add expenses to see your dynamic category distribution." T={T} />
+        </div>
+      ) : (
+        <div style={{ 
+          background: T.CARD, 
+          border: `1px solid ${T.LINE}`, 
+          borderRadius: 22, 
+          padding: "16px 18px", 
+          display: "flex", 
+          alignItems: "center", 
+          gap: 16, 
+          boxShadow: T.SHADOW_MD 
+        }}>
+          <div style={{ width: 104, height: 104, flexShrink: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2} stroke={T.CARD}>
+                  {pieData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
+            {pieData.slice(0, 4).map((e) => (
+              <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+                <span style={{ width: 9, height: 9, borderRadius: 3, background: e.color, flexShrink: 0 }} />
+                <span style={{ flex: 1, color: T.INK_SOFT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 12.5, fontWeight: 500 }}>{e.name}</span>
+                <span style={{ fontFamily: F_MONO, color: T.INK, fontWeight: 600, fontSize: 12.5 }}>{fmtAmount(e.value)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Wallets & Accounts Quick Overview */}
       <SectionTitle action={accounts.length > 0 ? "All Accounts →" : "Add Wallet +"} onAction={onGoWallets} T={T}>
@@ -979,44 +1017,6 @@ function HomeScreen({ monthTotals, transactions, categories, accounts = [], acco
                 </div>
               );
             })}
-          </div>
-        </div>
-      )}
-
-      {/* Spending Breakdown Donut Card */}
-      <SectionTitle T={T}>Monthly Spending by Category</SectionTitle>
-      {pieData.length === 0 ? (
-        <div style={{ background: T.CARD, border: `1px solid ${T.LINE}`, borderRadius: 22, padding: "24px 16px", boxShadow: T.SHADOW_MD }}>
-          <EmptyState icon={PieChartIcon} title="No spending logged" sub="Add expenses to see your dynamic category distribution." T={T} />
-        </div>
-      ) : (
-        <div style={{ 
-          background: T.CARD, 
-          border: `1px solid ${T.LINE}`, 
-          borderRadius: 22, 
-          padding: "16px 18px", 
-          display: "flex", 
-          alignItems: "center", 
-          gap: 16, 
-          boxShadow: T.SHADOW_MD 
-        }}>
-          <div style={{ width: 104, height: 104, flexShrink: 0 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2} stroke={T.CARD}>
-                  {pieData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
-            {pieData.slice(0, 4).map((e) => (
-              <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
-                <span style={{ width: 9, height: 9, borderRadius: 3, background: e.color, flexShrink: 0 }} />
-                <span style={{ flex: 1, color: T.INK_SOFT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 12.5, fontWeight: 500 }}>{e.name}</span>
-                <span style={{ fontFamily: F_MONO, color: T.INK, fontWeight: 600, fontSize: 12.5 }}>{fmtAmount(e.value)}</span>
-              </div>
-            ))}
           </div>
         </div>
       )}
