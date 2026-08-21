@@ -237,8 +237,10 @@ function PrimaryButton({ children, onClick, disabled, color, style, T = THEMES.l
         justifyContent: "center", 
         gap: 8, 
         letterSpacing: 0.2, 
-        transition: "all 0.2s ease", 
+        transition: "background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease", 
         boxShadow: disabled ? "none" : `0 6px 16px ${defaultColor}30`, 
+        transform: "translateZ(0)",
+        WebkitTapHighlightColor: "transparent",
         ...style 
       }}>
       {children}
@@ -284,7 +286,9 @@ function TransactionRow({ t, category, account, onClick, isLast, T = THEMES.ligh
         borderBottom: isLast ? "none" : `1px solid ${T.LINE_SUBTLE}`, 
         cursor: "pointer", 
         textAlign: "left", 
-        transition: "all 0.15s ease" 
+        transition: "background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease", 
+        willChange: "transform",
+        transform: "translateZ(0)"
       }}>
       <IconStamp icon={category?.icon || "wallet"} color={category?.color || "#64748B"} size={42} T={T} />
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -712,7 +716,9 @@ function FabAction({ label, icon: Icon, color, onClick, glow, T = THEMES.light }
         background: "none", 
         border: "none", 
         cursor: "pointer", 
-        animation: "popIn .18s ease" 
+        animation: "none",
+        willChange: "transform",
+        transform: "translateZ(0)"
       }}>
       <span style={{ 
         background: "#161616", 
